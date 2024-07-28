@@ -22,32 +22,38 @@
     </header>
     <section id="about">
         <h2>About Me</h2>
-        <p>Researcher with experience in classical machine learning, and large scale deep learning, including the LLMs(Large Langiage models). Passionate about training neural networks.</p>
+        <p>Researcher with experience in classical machine learning, and large scale deep learning, including the LLMs(Large Language models). Passionate about training neural networks.</p>
     </section>
     <section id="experience">
         <h2>Industry Experience</h2>
-        <h4> Intent Classification </h4>
+        <h3> Intent Classification </h3>
         <ul>
             <li> We classify customer queries into predefined intents to enable automated handling by our Chatbot. Our trained model outperforms the existing solution and LLMs including GPT-3.5.</li>
+            <li> Transformer Based multiple network(s) training</li>
         </ul>
-        <h4>Knowledge Article Recommendation</h4>
+        <h3>Knowledge Article Recommendation</h3>
         <ul>
             <li>Trained a DistilBERT on the MSMarco dataset to proactively recommend relevant articles, achieving comparable performance on the TREC21 and TREC20 datasets.</li>
+            <li>Distillation, Multiple methods of scoring (query, passage) pair, tradeoff in scoring,represetantion mechanism and final performance</li>
+            <li>inspired from <a href="https://arxiv.org/abs/2104.06967"> Efficiently teaching an effective dense retriever with balanced topic aware sampling</a></li>
         </ul>
-        <h4>Answer Recommendation, Generation</h4>
+        <h3>Answer Recommendation, Generation</h3>
         <ul>
             <li>Recommended relevant queries and answers from a Knowledge Base, outperforming existing methods.</li>
+            <li>Generate answer conditioned on recommendations, inspired from <a href="https://arxiv.org/abs/2110.07752"> Posterior guided training for retrievers</a> and <a href="https://arxiv.org/abs/1811.01241">Knowledge powered conversational agents </a></li>
         </ul>
         
-        <h4>LLM as Co-Pilot</h4>
+        <h3>LLM as Co-Pilot</h3>
         <ul>
             <li>Utilized LLMs to generate contextually relevant responses during conversations, augmenting the LLM context with relevant historical information.</li>
+            <li>Designed an identity task <a href="https://github.com/gkamradt/LLMTest_NeedleInAHaystack">(similar to Needle in a Haystack)</a> for our context.</li>
         </ul>
-        <h4> Content Analysis and Storyline Extraction</h4>
+        <h3> Content Analysis and Storyline Extraction</h3>
         <ul>
             <li>Quantified character attributes using text, image, and audio data, correlating features with viewership metrics.</li>
+            <li>Episode vector learning, social relationship, face recognition</li>
         </ul>
-        <h4>Entity extraction from Semi-Structured Documents</h4>
+        <h3>Entity extraction from Semi-Structured Documents</h3>
         <ul>
             <li> Used HMM to extract values corresponding to predefined keys from documents.</li>
         </ul>
@@ -71,7 +77,7 @@
         <ul>
             <li>Implemented multi-agent reinforcement learning (MARL) to dynamically adjust traffic signal durations based on congestion.</li>
             <li>Algorithm: Proximal Policy Optimization (PPO) with Advantage Actor-Critic.</li>
-            <li>Simulated traffic data using PTV Vissim and demonstrated MARL’s superiority over fixed-time algorithms in terms of average speed, delay, and lane occupancy.</li>
+            <li>Simulated traffic data using PTV Vissim and demonstrated MARL’s superiority over fixed-time algorithms in terms of average speed, delay, and lane occupancy. <a href="https://github.com/SonuDixit/Traffic/blob/master/mtech_project_report_results/mtech_project.pdf">Results</a></li>
         </ul>
     </section>
     <section id="contact">
