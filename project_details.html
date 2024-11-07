@@ -27,9 +27,9 @@
                     <li>Careful with masking code, put inside tokenizer. I made a mistake, which I realized 2 days later when I was getting poor results - all the generated tokens were |EOT|.</li>
                 </ul>
             </li>
-            <li>Sometimes the sequence length was ~3200 tokens. On an 80GB GPU, I could fit only one chat, making batch size = 1.</li>
+            <li>On an 80GB GPU, I could fit only one chat, making batch size = 1.</li>
             <li>DDP training on 2 x 80GB GPUs, with a gradient accumulation step of 128.</li>
-            <li>Train ~ 25000, val ~5000, test ~30000.</li>
+            <!-- <li>Train ~ 25000, val ~5000, test ~30000.</li> -->
             <li>First experiment was to overfit 20 chats, with the last classification layer training and/or last decoder layer training. We found the model could completely overfit the data.</li>
             <li>Trained only the last layer, with learning rate in range of (1e-5 to 1e-6).</li>
             <li>
