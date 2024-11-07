@@ -1,0 +1,34 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Projects - Sonu Dixit</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <header>
+        <h1>Sonu Dixit</h1>
+        <nav>
+            <ul>
+                <li><a href="index.html">Home</a></li>
+                <li><a href="projects.html">Projects</a></li>
+                <li><a href="#contact">Contact</a></li>
+            </ul>
+        </nav>
+    </header>
+    <section>
+        <h2 id="llm_finetuning">LLM finetuning </h2>
+        <ul>We fine-tune locally hosted llama on our conversation data. This is fine-tuning of last layer, not the PEFT method. We see performance improvement.
+            Details - 
+            1. Dataset Prep - x,y=whole conversation, but loss calculation is only on the Agent turns, Other tokens(cutomer tokens ) are replaced with -100 so the cross entropy loss is not calculated on them.
+                1. add_generation_prompt = true
+                2. Careful with masking code, put inside tokeniser, I did a mistake, which I realised 2 days later when I was getting poor results - all the generated tokens were |EOT|
+            
+        </ul>
+    </section>
+    <footer>
+        <p>&copy; 2024 Sonu Dixit. All rights reserved.</p>
+    </footer>
+</body>
+</html>
