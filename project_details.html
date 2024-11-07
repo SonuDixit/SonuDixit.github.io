@@ -19,13 +19,40 @@
     </header>
     <section>
         <h2 id="llm_finetuning">LLM finetuning </h2>
-        <ul>We fine-tune locally hosted llama on our conversation data. This is fine-tuning of last layer, not the PEFT method. We see performance improvement.
-            Details - 
-            1. Dataset Prep - x,y=whole conversation, but loss calculation is only on the Agent turns, Other tokens(cutomer tokens ) are replaced with -100 so the cross entropy loss is not calculated on them.
-                1. add_generation_prompt = true
-                2. Careful with masking code, put inside tokeniser, I did a mistake, which I realised 2 days later when I was getting poor results - all the generated tokens were |EOT|
-            
-        </ul>
+        <ol>
+            <li>
+                <strong>Dataset Prep:</strong> x, y = whole conversation, but loss calculation is only on the Agent turns. Other tokens (customer tokens) are replaced with -100 so the cross-entropy loss is not calculated on them.
+                <ul>
+                    <li><strong>add_generation_prompt = true</strong></li>
+                    <li>Careful with masking code, put inside tokenizer. I made a mistake, which I realized 2 days later when I was getting poor results - all the generated tokens were |EOT|.</li>
+                </ul>
+            </li>
+            <li>Sometimes the sequence length was ~3200 tokens. On an 80GB GPU, I could fit only one chat, making batch size = 1.</li>
+            <li>DDP training on 2 x 80GB GPUs, with a gradient accumulation step of 128.</li>
+            <li>Train ~ 25000, val ~5000, test ~30000.</li>
+            <li>First experiment was to overfit 20 chats, with the last classification layer training and/or last decoder layer training. We found the model could completely overfit the data.</li>
+            <li>Trained only the last layer, with learning rate in range of (1e-5 to 1e-6).</li>
+            <li>
+                Validation on validation data of about 5000 points:
+                <ul>
+                    <li>Was calculating CE loss and writing some samples in a different file for manual review.</li>
+                </ul>
+            </li>
+            <li>
+                <strong>Result:</strong>
+                <ul>
+                    <li><strong>Its performance improved:</strong>
+                        <ul>
+                            <li>Prior to fine-tuning, it used to generate verbose output; after, it started generating in Agent tone, short-length outputs.</li>
+                            <li>Before fine-tuning, it wasn't personalizing the conversation with the customer's name and wasn’t using its own name (like Agent). After fine-tuning, it started to use the customer's name to personalize the conversation and also generated an Agent name. This may have been possible through prompt engineering.</li>
+                            <li>Its performance improved significantly in initial and end turns.</li>
+                            <li>In middle turns, where it needs external information, it was not able to generate relevant responses.</li>
+                            <li>Its performance degraded on the Instruction-following benchmark. One reason for this is, in this training dataset, all the chats had the same instruction: “you are a helpful chatbot. Knowledge cut-off date - date.” The training data had no variation. I recommend training on a mixture of data; in this case, it could be 70% chat data, and the rest 30% could include other data (general instruction following, math, English, reasoning, medical, etc.).</li>
+                        </ul>
+                    </li>
+                </ul>
+            </li>
+        </ol>
     </section>
     <footer>
         <p>&copy; 2024 Sonu Dixit. All rights reserved.</p>
