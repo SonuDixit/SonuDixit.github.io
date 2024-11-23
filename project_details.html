@@ -12,7 +12,7 @@
         <nav>
             <ul>
                 <li><a href="index.html">Home</a></li>
-                <li><a href="projects.html">Projects</a></li>
+                <!-- <li><a href="projects.html">Projects</a></li> -->
                 <li><a href="#contact">Contact</a></li>
             </ul>
         </nav>
@@ -53,6 +53,29 @@
                 </ul>
             </li>
         </ol>
+
+        <h2 id="intent_classification"> Intent Classification </h2>
+        <ol>
+            <li> Classes are added/removed with time. </li>
+            <li> We finetune transformer based model on our data. We find manual finetuning to be better than <a href="https://arxiv.org/abs/2209.11055">SetFit</a></li>
+            <li> We compare against llms (GPT, Mixtral, and others) using few shot prompt-tuning and finetuning(generation based classification)</li>
+            <!-- <li> </li> -->
+
+        </ol>
+
+        <h2 id="info_retrieval"> Information Retrieval </h2>
+        <ol>
+            <li> We train multiple formulations Bert_dot, Bert_cat, ColBert for ranking task. Bert_cat outperforms other formulations.</li>
+            <li> Bert_cat requires a lot of inference time compute. To reduce latency We distil from ensemble scores of Bert_cat to DistilBERT</li>
+            <li> We finetune the trained DistilBERT on our client specific data. </li>
+            <ul>
+                <li>Recommendation from a database of Question-Answer pairs </li>
+                <li> Conditional response generation for an ongoing conversation </li>
+            </ul>
+            <!-- <li> </li> -->
+
+        </ol>
+
     </section>
     <!-- <footer>
         <p>&copy; 2024 Sonu Dixit. All rights reserved.</p>
