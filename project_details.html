@@ -65,14 +65,18 @@
 
         </ol>
 
-        <h2 id="info_retrieval"> Information Retrieval </h2>
+        <h2 id="info_retrieval"> Information Retrieval and Generation </h2>
         <ol>
             <li> We train multiple formulations Bert_dot, Bert_cat, ColBert for ranking task. Bert_cat outperforms other formulations.</li>
             <li> Bert_cat requires a lot of inference time compute. To reduce latency We distil from ensemble scores of Bert_cat to DistilBERT</li>
             <li> We finetune the trained DistilBERT on our client specific data. </li>
             <ul>
                 <li> Recommendation from a database of Question-Answer pairs. Upon finetuning, We outperform the exisiting solution. </li>
-                <li> Conditional response generation for an ongoing conversation. Results on public data <a href="https://eval.ai/web/challenges/challenge-page/689/leaderboard/1909/Recall%25405"> team_name-Test_Team_Name  </li>
+                <li> Conditional response generation for an ongoing conversation. Results on public data <a href="https://eval.ai/web/challenges/challenge-page/689/leaderboard/1909/Recall%25405"> team_name-Test_Team_Name </a>  </li>
+                <ul>
+                    <li> End to end training of RAG system using posterior guided retriever </li>
+                    <li> We manually evaluate the trained system on a client specific data (web-scraped data and questions) </li>
+                </ul>    
             </ul>
             <!-- <li> </li> -->
 
