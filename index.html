@@ -54,6 +54,14 @@
             <li>Utilized LLMs to generate contextually relevant responses during conversations, augmenting the LLM context with relevant historical information.</li>
             <li>Designed an identity task <a href="https://github.com/gkamradt/LLMTest_NeedleInAHaystack">(similar to Needle in a Haystack)</a> for our context.</li>
         </ul>
+
+        <h3>Named Entity Recognition by Question Answering</h3>
+        <ul>
+            <li> Different clients need different granular entities(start_date_of_reservation, flight_time, ..). Traditional NER requires training data for the specific entities. </li>
+            <li> We formulate this as QA problem, where question is asked for client specific entities. Model needs to Generate/extract the answer(entity). The same underlying QA-system can generalise to multiple clients. </li>
+            <li> It reduces client-specific entity extraction finetuning. </li>
+        </ul>
+
         <h3> Content Analysis and Storyline Extraction</h3>
         <ul>
             <li>Quantified character attributes using text, image, and audio data, correlating features with viewership metrics.</li>
