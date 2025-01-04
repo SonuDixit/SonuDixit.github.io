@@ -50,3 +50,33 @@ footer {
     bottom: 0;
     width: 100%;
 }
+
+
+/* Style for the intro section */
+.intro {
+    margin: 20px;
+}
+
+.intro h2 {
+    text-align: center; /* Centers the header */
+    margin-bottom: 15px; /* Adds spacing between the header and the content */
+}
+
+.content {
+    display: flex; /* Aligns the paragraph and image side by side */
+    align-items: flex-start; /* Aligns content at the top */
+    gap: 20px; /* Adds spacing between the text and the image */
+}
+
+/* Style for the paragraph */
+.content p {
+    flex: 1; /* Allows the text to take up the remaining space */
+    margin: 0; /* Removes default margins around the paragraph */
+}
+
+/* Style for the image */
+.content img {
+    width: 150px; /* Adjusts the image size */
+    height: auto; /* Maintains the aspect ratio */
+    border-radius: 50%; /* Optional: Makes the image circular */
+}
