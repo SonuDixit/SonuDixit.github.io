@@ -21,23 +21,18 @@
         <h2 id="llm_finetuning">LLM finetuning </h2>
         <ol>
             <li>
-                <strong>Dataset Prep:</strong> x, y = whole conversation, but We calculate loss on the Agent turns. In y, We replace other tokens with -100(pytorch specific) to ignore cross entropy loss calculation.
-                <ul>
+                <strong>Dataset :</strong> x, y = whole conversation, but We calculate loss on the Agent turns. In y, We replace other tokens with -100(pytorch specific) to ignore cross entropy loss calculation.
+                <!-- <ul> -->
                     <!-- <li><strong>add_generation_prompt = true</strong></li> -->
-                    <li>We put the masking code as part of tokenisation. I made a mistake, which I realized 2 days later when I was getting poor results - all the generated tokens were |EOT|.</li>
-                </ul>
+                    <!-- <li>We put the masking code as part of tokenisation. I made a mistake, which I realized 2 days later when I was getting poor results - all the generated tokens were |EOT|.</li> -->
+                <!-- </ul> -->
             </li>
-            <li>On an 80GB GPU, I could fit only one chat, making batch size = 1.</li>
+            <!-- <li>On an 80GB GPU, I could fit only one chat, making batch size = 1.</li> -->
             <li>DDP training on 2 x 80GB GPUs, with a gradient accumulation step of 128.</li>
             <!-- <li>Train ~ 25000, val ~5000, test ~30000.</li> -->
             <li>First experiment was to overfit 20 chats, with the last classification layer training and/or last decoder layer training. We found the model could completely overfit the data.</li>
             <li>Trained only the last layer, with learning rate in range of (1e-5 to 1e-6).</li>
-            <li>
-                Validation on validation data of about 5000 chats:
-                <ul>
-                    <li>Was calculating CE loss and writing some samples in a different file for manual review.</li>
-                </ul>
-            </li>
+            <li> Validation data : Calculate CE loss and write some samples in a different file for manual review.</li>
             <li>
                 <strong>Result:</strong>
                 <ul>
