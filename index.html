@@ -30,7 +30,7 @@
             Please refer to the experience section for more details on my projects.  
             <br><br> I earned my Master's degree in Artificial Intelligence from the Indian Institute of Science in 2019.
             During my Masters, I worked on multi-agent reinforcement learning for traffic signal control.
-            I have worked at [24]7.ai and Disney Star India Pvt Ltd.
+            In the industry, I have contributed to [24]7.ai and Disney Star India Pvt Ltd.
             <br><br> Outside of work, I enjoy swimming, running, and spending time in nature through long walks and treks.</p>
         <img src="images/sonu_pic.jpeg" alt="Sonu Dixit">
         </div>
@@ -40,47 +40,74 @@
         <h2>Industry Experience</h2>
         <h3> LLama 3 Finetuing for Customer Chat Conversation </h3>
         <ul>
-            <li>We finetune LLama 3.1 8B model on Agent Customer conversation data.<a href="project_details.html#llm_finetuning"> Details</a></li>
+            <li>We finetune LLama 3.1 8B model on Agent Customer conversation data.</li>
+            <!-- <li><strong>Result</strong> -->
+            <li>After fine-tuning, the model shifted from generating verbose responses to concise, agent-like replies.</li>
+            <li>It began personalizing conversations by using customer names and adopting an agent identity, which was absent before fine-tuning. This effect might also be achievable through prompt engineering.</li>
+            <li>Performance significantly improved in initial and final conversation turns.</li>
+            <li>However, the model struggled to generate relevant responses during middle turns that required external information.</li>
+            <li>Performance on instruction-following benchmarks declined, likely due to the lack of diversity in training instructions. To address this, I recommend using a mixed dataset—70% chat data and 30% diverse tasks (e.g., instruction-following, reasoning, math, etc.).</li>
+            <!-- </li> -->
         </ul>
         
         <h3> Intent Classification </h3>
         <ul>
-            <li> We classify customer queries into predefined intents to enable automated handling by our Chatbot. Our trained model outperforms the existing solution and LLMs including GPT-3.5.</li>
-            <li> Transformer Based multiple network(s) training. <a href="project_details.html#intent_classification">Details</a></li>
+            <li>We classify customer queries into predefined intents to enable automated handling by our Chatbot. Our trained model outperforms the existing solution and LLMs including GPT-3.5.</li>
+            <li>Transformer Based multiple network(s) training. </li>
+            <li>Classes are added/removed with time. Final solution design must take this into account.</li>
+            <li>We find manual finetuning to be better than data efficient methods like <a href="https://arxiv.org/abs/2209.11055">SetFit</a></li>
+            <li>We compare against llms (GPT, Mixtral, and others) using few shot prompt-tuning and finetuning(generation based classification) </li>
+            <li>We design and conduct experiments to estabilish the approach can understand client-useful words even when its OOV for the model. </li>
+            <li>We conduct experimens to study its performance on OOD data, and how to minimise the risk. </li>
+            <li>We found bias in models behaviour. We design solutions to handle such bias. </li>
+
         </ul>
         
-        <h3>Knowledge Article Recommendation</h3>
+        <h3>Information Retrieval and Conditional Generation </h3>
         <ul>
             <li>Trained a DistilBERT on the MSMarco dataset to proactively recommend relevant articles, achieving comparable performance on the TREC21 and TREC20 datasets.</li>
-            <li>Distillation, Multiple methods of scoring (query, passage) pair, tradeoff in scoring,represetantion mechanism and final performance <a href="project_details.html#info_retrieval">Details</a> </li>
-            <li>inspired from <a href="https://arxiv.org/abs/2104.06967"> Efficiently teaching an effective dense retriever with balanced topic aware sampling</a></li>
+            <li>We train multiple formulations Bert_dot, Bert_cat, <a href="https://arxiv.org/abs/2004.12832">ColBert</a> for ranking task. Bert_cat outperforms other formulations.</li>
+            <li>Bert_cat requires a lot of inference time compute. To reduce latency We perform a dual distil from ensemble scores of Bert_cat and ColBert to the DistilBERT</li>
+            <!-- <li>Distillation, Multiple methods of scoring (query, passage) pair, tradeoff in scoring, represetantion mechanism and final performance </li> -->
+            <li>The method is inspired from <a href="https://arxiv.org/abs/2104.06967"> Efficiently teaching an effective dense retriever with balanced topic aware sampling</a></li>
+            <li>We explore multiple <a href="https://arxiv.org/abs/1702.08734">first level rankers</a> (TF-IDF, BM25, LSH, PQ-Encoding)</li>
+            <li> We finetune the trained DistilBERT on our client specific data. </li>
+            <ul>
+                <li> Recommendation from a database of Question-Answer pairs. Upon finetuning, We outperform the exisiting solution. </li>
+                <li> Conditional response generation for an ongoing conversation. Results on public data <a href="https://eval.ai/web/challenges/challenge-page/689/leaderboard/1909/Recall%25405"> team_name-Test_Team_Name </a>  </li>
+                <ul>
+                    <li> End to end training of RAG system using <a href="https://arxiv.org/abs/2110.07752">posterior guided retriever</a>. Here we use the trained DBert as the retriever. </li>
+                    <li> We manually evaluate the trained system on a client specific data (web-scraped client website data and questions) </li>
+                </ul>    
+            </ul>
         </ul>
         
-        <h3>Answer Recommendation, Generation</h3>
+        <!-- <h3>Answer Recommendation, Generation</h3>
         <ul>
             <li>Recommended relevant queries and answers from a Knowledge Base, outperforming existing methods.</li>
             <li>Generate answer conditioned on recommendations, inspired from <a href="https://arxiv.org/abs/2110.07752"> Posterior guided training for retrievers</a> and <a href="https://arxiv.org/abs/1811.01241">Knowledge powered conversational agents </a></li>
             <li>End to end training of RAG systems</li>
-        </ul>
+        </ul> -->
         
         <h3>LLM as Co-Pilot</h3>
         <ul>
-            <li>We utilize LLMs to generate contextually relevant responses during conversations, augmenting the LLM context with relevant historical information.</li>
-            <li>Designed an identity task <a href="https://github.com/gkamradt/LLMTest_NeedleInAHaystack">(similar to Needle in a Haystack)</a> for our context.</li>
+            <li>We utilize LLMs to generate contextually relevant responses during conversations.</li> 
+            <li>We append the LLM context with relevant historical information, using the retriever trained in the IR task.</li>
+            <li>We designed an identity task <a href="https://github.com/gkamradt/LLMTest_NeedleInAHaystack">(similar to Needle in a Haystack)</a> to evaluate the LLM performance.</li>
         </ul>
 
         <h3>Compliance Evaluation and Early Warning System - Agent-Customer Chat</h3>
         <ul>
-            <li> We pass the quantifiable metrics to LLM. </li>
-            <li> Prompt-Engineering, We use LLM-as-judge for evaluation. </li>
+            <li>We pass the quantifiable metrics to LLM. </li>
+            <li>Prompt-Engineering, We use LLM-as-judge for evaluation. </li>
             <!-- <li>We use LLMs to generate warnings for non-compliance content. </li> -->
         </ul>
 
         <h3>Named Entity Recognition by Question Answering</h3>
         <ul>
-            <li> Different clients need different granular entities(start_date_of_reservation, flight_time, ..). Traditional NER requires training data for the specific entities. </li>
-            <li> We formulate this as QA problem, where question is asked for client specific entities. Model needs to Generate/extract the answer(entity). The same underlying QA-system can generalise to multiple clients. </li>
-            <li> It reduces client-specific entity extraction finetuning. </li>
+            <li>Different clients need different granular entities(start_date_of_reservation, flight_time, ..). Traditional NER requires training data for the specific entities. </li>
+            <li>We formulate this as QA problem, where question is asked for client specific entities. Model needs to Generate/extract the answer(entity). The same underlying QA-system can generalise to multiple clients. </li>
+            <li>It reduces client-specific entity extraction finetuning. </li>
         </ul>
 
         <h3> Content Analysis and Storyline Extraction</h3>
@@ -91,6 +118,7 @@
         <h3>Entity extraction from Semi-Structured Documents</h3>
         <ul>
             <li> Used HMM to extract values corresponding to predefined keys from documents.</li>
+            <li> Implemented the Viterbi and the scaled Baum-Welch algorithm for learning parameters.</li>
         </ul>
 
     </section>
