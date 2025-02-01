@@ -65,7 +65,7 @@
         
         <h3>Information Retrieval and Conditional Generation </h3>
         <ul>
-            <li>Trained a DistilBERT on the MSMarco dataset to proactively recommend relevant articles, achieving comparable performance on the TREC21 and TREC20 datasets.</li>
+            <li>Trained a DistilBERT on the MSMarco dataset to proactively recommend relevant articles, achieving comparable performance on the <a href="https://microsoft.github.io/msmarco/TREC-Deep-Learning-2021">TREC21</a> and TREC20 datasets.</li>
             <li>We train multiple formulations Bert_dot, Bert_cat, <a href="https://arxiv.org/abs/2004.12832">ColBert</a> for ranking task. Bert_cat outperforms other formulations.</li>
             <li>Bert_cat requires a lot of inference time compute. To reduce latency We perform a dual distil from ensemble scores of Bert_cat and ColBert to the DistilBERT</li>
             <!-- <li>Distillation, Multiple methods of scoring (query, passage) pair, tradeoff in scoring, represetantion mechanism and final performance </li> -->
