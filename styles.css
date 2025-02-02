@@ -80,3 +80,21 @@ footer {
     height: auto; /* Maintains the aspect ratio */
     border-radius: 50%; /* Optional: Makes the image circular */
 }
+
+.publication, .thesis {
+    display: flex;
+    align-items: center;
+    gap: 20px; /* Space between image and text */
+    margin-bottom: 30px; /* Space between items */
+}
+
+.publication img, .thesis img {
+    width: 150px; /* Adjust image size */
+    height: auto; 
+    border-radius: 8px; /* Optional: for rounded corners */
+    object-fit: cover; /* Keeps the image proportionate */
+}
+
+.publication-content, .thesis-content {
+    flex: 1; /* Makes text occupy the remaining space */
+}
