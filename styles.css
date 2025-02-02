@@ -107,7 +107,7 @@ footer {
 }
 
 .project img {
-    width: 300px; /* Adjust the image size */
+    width: 400px; /* Adjust the image size */
     height: auto;
     border-radius: 8px; /* Optional: rounded corners */
     object-fit: cover; /* Keeps the image proportionate */
