@@ -89,7 +89,7 @@ footer {
 }
 
 .publication img, .thesis img {
-    width: 150px; /* Adjust image size */
+    width: 250px; /* Adjust image size */
     height: auto; 
     border-radius: 8px; /* Optional: for rounded corners */
     object-fit: cover; /* Keeps the image proportionate */
@@ -97,4 +97,22 @@ footer {
 
 .publication-content, .thesis-content {
     flex: 1; /* Makes text occupy the remaining space */
+}
+
+.project {
+    display: flex;
+    align-items: center;
+    gap: 20px; /* Space between image and text */
+    margin-bottom: 30px; /* Space between projects */
+}
+
+.project img {
+    width: 300px; /* Adjust the image size */
+    height: auto;
+    border-radius: 8px; /* Optional: rounded corners */
+    object-fit: cover; /* Keeps the image proportionate */
+}
+
+.project-content {
+    flex: 1; /* Makes the text occupy the remaining space */
 }
