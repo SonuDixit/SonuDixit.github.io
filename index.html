@@ -51,13 +51,13 @@
 
     <section id="experience">
         <h2>Industry Experience</h2>
-        <h3> RLVR training for reasoning based content moderation </h3>
+        <h3 id="rlvr-content-moderation"> RLVR training for reasoning based content moderation </h3>
         <ul>
             <li>Multi modal LLM training for reasoning based content evaluation </li>
             <li>Improved moderation recall by 2× over GPT-based moderation systems while maintaining adaptability to evolving policy definitions.</li>
             <li>Designed evaluation frameworks for reasoning quality, instruction following, and robustness under unseen moderation policies.</li>
         </ul>
-        <h3> LLama 3 Finetuing for Customer Chat Conversation </h3>
+        <h3 id="llama3-finetuning"> LLama 3 Finetuing for Customer Chat Conversation </h3>
         <ul>
             <li>We finetune LLama 3.1 8B model on Agent Customer conversation data.</li>
             <!-- <li><strong>Result</strong> -->
@@ -69,7 +69,7 @@
             <!-- </li> -->
         </ul>
         
-        <h3> Intent Classification </h3>
+        <h3 id="intent-classification"> Intent Classification </h3>
         <ul>
             <li>We classify customer queries into predefined intents to enable automated handling by our Chatbot. Our trained model outperforms the existing solution and LLMs including GPT-3.5.</li>
             <li>Transformer Based multiple network(s) training. </li>
@@ -82,7 +82,7 @@
 
         </ul>
         
-        <h3>Information Retrieval and Conditional Generation </h3>
+        <h3 id="information-retrieval">Information Retrieval and Conditional Generation </h3>
         <ul>
             <li>Trained a DistilBERT on the MSMarco dataset to proactively recommend relevant articles, achieving comparable performance on the <a href="https://microsoft.github.io/msmarco/TREC-Deep-Learning-2021">TREC21</a> and TREC20 datasets.</li>
             <li>We train multiple formulations Bert_dot, Bert_cat, <a href="https://arxiv.org/abs/2004.12832">ColBert</a> for ranking task. Bert_cat outperforms other formulations.</li>
@@ -109,28 +109,28 @@
             <li>End to end training of RAG systems</li>
         </ul> -->
         
-        <h3>LLM as Co-Pilot</h3>
+        <h3 id="llm-co-pilot">LLM as Co-Pilot</h3>
         <ul>
             <li>We utilize LLMs to generate contextually relevant responses during conversations.</li> 
             <li>We append the LLM context with relevant historical information, using the retriever trained in the IR task.</li>
             <li>We designed an identity task <a href="https://github.com/gkamradt/LLMTest_NeedleInAHaystack">(similar to Needle in a Haystack)</a> to evaluate the LLM performance.</li>
         </ul>
 
-        <h3>Compliance Evaluation and Early Warning System - Agent-Customer Chat</h3>
+        <h3 id="compliance-evaluation">Compliance Evaluation and Early Warning System - Agent-Customer Chat</h3>
         <ul>
             <li>We pass the quantifiable metrics to LLM. </li>
             <li>Prompt-Engineering, We use LLM-as-judge for evaluation. </li>
             <!-- <li>We use LLMs to generate warnings for non-compliance content. </li> -->
         </ul>
 
-        <h3>Named Entity Recognition by Question Answering</h3>
+        <h3 id="ner-qa">Named Entity Recognition by Question Answering</h3>
         <ul>
             <li>Different clients need different granular entities(start_date_of_reservation, flight_time, ..). Traditional NER requires training data for the specific entities. </li>
             <li>We formulate this as QA problem, where question is asked for client specific entities. Model needs to Generate/extract the answer(entity). The same underlying QA-system can generalise to multiple clients. </li>
             <li>It reduces client-specific entity extraction finetuning. </li>
         </ul>
 
-        <h3> Content Analysis and Storyline Extraction</h3>
+        <h3 id="content-analysis"> Content Analysis and Storyline Extraction</h3>
         <div class="project">
             <img src="images/yrkkh_story_flow.gif" alt="Content Analysis Project Image">
             <div class="project-content">
@@ -147,7 +147,7 @@
             <li>Episode vector learning, social relationship, face recognition. <a href="https://sites.google.com/view/contentunderstanding/home">Details</a></li>
         </ul> -->
 
-        <h3>Entity extraction from Semi-Structured Documents</h3>
+        <h3 id="semi-structured-documents">Entity extraction from Semi-Structured Documents</h3>
         <ul>
             <li> Used HMM to extract values corresponding to predefined keys from documents.</li>
             <li> Implemented the Viterbi and the scaled Baum-Welch algorithm for learning parameters.</li>
