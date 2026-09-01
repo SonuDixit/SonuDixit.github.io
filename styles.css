@@ -41,6 +41,15 @@ h2 {
     color: #333;
 }
 
+.section-link {
+    color: #1a1a1a;
+    text-decoration: none;
+}
+
+.section-link:hover {
+    text-decoration: underline;
+}
+
 footer {
     background: #333;
     color: #fff;
