@@ -73,28 +73,28 @@
     .axis.w { background: var(--amber); color: var(--amber-ink); }
     .freq-row { display: grid; grid-template-columns: repeat(12, minmax(0,1fr)); gap: 4px; margin: 12px 0; }
     .frequency-scroll { overflow-x: auto; }
-    .freq-row.wide16 { grid-template-columns: repeat(16, minmax(0,1fr)); min-width: 620px; }
+    .freq-row.wide8 { grid-template-columns: repeat(8, minmax(0,1fr)); min-width: 330px; }
     .rotation-demo { margin-top: 18px; padding: 16px; border: 1px solid var(--line); border-radius: 14px; background: #fbfdff; }
     .rotation-demo h3 { margin-bottom: 6px; }
     .rotation-row { display: grid; grid-template-columns: 104px minmax(0,1fr); gap: 10px; align-items: center; margin: 11px 0; }
     .rotation-row-label { font: 700 .86rem/1.4 ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; color: var(--ink); }
     .rotation-grid-scroll, .assembled-scroll { min-width: 0; overflow-x: auto; }
-    .rotation-cells { display: grid; grid-template-columns: repeat(16, minmax(0,1fr)); gap: 3px; min-width: 500px; }
+    .rotation-cells { display: grid; grid-template-columns: repeat(8, minmax(0,1fr)); gap: 3px; min-width: 330px; }
     .rotation-cell { min-height: 35px; display: grid; place-items: center; border: 1px solid #e0e6ee; border-radius: 5px; background: #f0f3f7; color: #8a96a5; font: .68rem ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; }
     .rotation-cell.selected-t { background: var(--blue); border-color: #8bb5ec; color: var(--blue-ink); font-weight: 800; }
     .rotation-cell.selected-h { background: var(--green); border-color: #83d7a2; color: var(--green-ink); font-weight: 800; }
     .rotation-cell.selected-w { background: var(--amber); border-color: #e7bd82; color: var(--amber-ink); font-weight: 800; }
     .rotation-key { display: flex; flex-wrap: wrap; gap: 10px 14px; color: var(--muted); font-size: .8rem; margin: 10px 0 16px; }
     .rotation-key span { display: inline-flex; align-items: center; gap: 6px; }
-    .assembled-vector { display: grid; grid-template-columns: minmax(140px,4fr) minmax(140px,4fr) minmax(220px,8fr); gap: 6px; min-width: 540px; }
+    .assembled-vector { display: grid; grid-template-columns: minmax(110px,2fr) minmax(135px,3fr) minmax(135px,3fr); gap: 6px; min-width: 420px; }
     .assembled-segment { padding: 9px; border: 1px solid var(--line); border-radius: 9px; }
     .assembled-segment.t { background: #eef5ff; border-color: #b8d2f3; }
     .assembled-segment.h { background: #effbf3; border-color: #b3e5c2; }
     .assembled-segment.w { background: #fff7ec; border-color: #f0d2a8; }
     .assembled-segment-label { font: 700 .78rem/1.4 ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; overflow-wrap: anywhere; }
     .assembled-cells { display: grid; gap: 3px; margin-top: 7px; }
-    .assembled-cells.four { grid-template-columns: repeat(4, minmax(0,1fr)); }
-    .assembled-cells.eight { grid-template-columns: repeat(8, minmax(0,1fr)); }
+    .assembled-cells.two { grid-template-columns: repeat(2, minmax(0,1fr)); }
+    .assembled-cells.three { grid-template-columns: repeat(3, minmax(0,1fr)); }
     .assembled-cell { background: #fff; border: 1px solid rgba(25,45,70,.12); border-radius: 4px; padding: 7px 1px; text-align: center; font: .66rem ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; }
     .rotation-footnote { margin-top: 12px; font-size: .84rem; color: var(--muted); }
 
@@ -225,29 +225,29 @@
         </div>
         <div class="card">
           <h3>Chunked frequency allocation</h3>
-                    <p class="muted small">Worked toy layout: 16 frequency entries split as 4 for T, 4 for H, and 8 for W (<code>mrope_section = [4, 4, 8]</code>). This intentionally uneven split lets us trace one position all the way through the coefficient vector.</p>
+                    <p class="muted small">Small worked example: 8 frequency entries split as 2 for T, 3 for H, and 3 for W (<code>mrope_section = [2, 3, 3]</code>). Each cell is one entry in the half-dimensional frequency tensor.</p>
           <div class="frequency-scroll">
-            <div class="freq-row wide16" aria-label="Chunked MRoPE frequency allocation with 4 time, 4 height, and 8 width entries">
-              <div class="freq t">0<small>T</small></div><div class="freq t">1<small>T</small></div><div class="freq t">2<small>T</small></div><div class="freq t">3<small>T</small></div>
-              <div class="freq h">4<small>H</small></div><div class="freq h">5<small>H</small></div><div class="freq h">6<small>H</small></div><div class="freq h">7<small>H</small></div>
-              <div class="freq w">8<small>W</small></div><div class="freq w">9<small>W</small></div><div class="freq w">10<small>W</small></div><div class="freq w">11<small>W</small></div><div class="freq w">12<small>W</small></div><div class="freq w">13<small>W</small></div><div class="freq w">14<small>W</small></div><div class="freq w">15<small>W</small></div>
+            <div class="freq-row wide8" aria-label="Chunked MRoPE frequency allocation with 2 time, 3 height, and 3 width entries">
+              <div class="freq t">0<small>T</small></div><div class="freq t">1<small>T</small></div>
+              <div class="freq h">2<small>H</small></div><div class="freq h">3<small>H</small></div><div class="freq h">4<small>H</small></div>
+              <div class="freq w">5<small>W</small></div><div class="freq w">6<small>W</small></div><div class="freq w">7<small>W</small></div>
             </div>
           </div>
           <div class="legend"><span><i class="swatch t"></i>Time frequencies</span><span><i class="swatch h"></i>Height frequencies</span><span><i class="swatch w"></i>Width frequencies</span></div>
           <div class="formula" style="margin-top:15px">
             angleᵢ = position[axis(i)] × θᵢ<br>
-            mrope_section = [4, 4, 8], &nbsp; position = (t,h,w) = (0,1,2)<br>
-            <strong>r<sub>M</sub>(0,1,2) = concat(r<sub>0</sub>[0:4], r<sub>1</sub>[4:8], r<sub>2</sub>[8:16])</strong>
-            <div class="secondary">Here r<sub>p</sub> is a symbolic 16-entry position-dependent RoPE coefficient vector. The slices use half-open indexing: [0:4] means entries 0, 1, 2, 3. The diagram focuses on the position-dependent coefficients; a full RoPE rotation is represented by paired sine/cosine coefficients (or an equivalent block-diagonal matrix).</div>
+            mrope_section = [2, 3, 3], &nbsp; position = (t,h,w) = (0,1,2)<br>
+            <strong>r<sub>M</sub>(0,1,2) = concat(r<sub>0</sub>[0:2], r<sub>1</sub>[2:5], r<sub>2</sub>[5:8])</strong>
+            <div class="secondary">For this toy example, each r<sub>p</sub> has 8 frequency entries (the half-dimensional frequency tensor). Slices are half-open: [0:2] selects entries 0–1, [2:5] selects 2–4, and [5:8] selects 5–7. The model then duplicates selected frequency coefficients to match the full head dimension; cosine and sine coefficients together implement the rotation.</div>
           </div>
           <div class="rotation-demo">
             <h3>Build the MRoPE vector for position (0, 1, 2)</h3>
-            <p class="muted small">Read each source row, keep only the colored slice, then concatenate the three slices. Gray cells are not selected from that row.</p>
-            <div id="mrope-vector-visual" aria-label="Three source coefficient vectors with selected sections and the concatenated MRoPE vector">
+            <p class="muted small">Each source row has 8 entries. Keep the colored slice for its axis, then concatenate the selected entries. Gray cells are not selected from that row.</p>
+            <div id="mrope-vector-visual" aria-label="Three 8-entry source coefficient vectors with selected sections and the concatenated 8-entry MRoPE frequency vector">
               <p class="muted small">The vector illustration is loading. The equation above shows the complete selection rule.</p>
             </div>
           </div>
-          <p>In this worked example, T selects entries 0–3 from <code>r₀</code>, H selects entries 4–7 from <code>r₁</code>, and W selects entries 8–15 from <code>r₂</code>. The exact section lengths and coefficient layout are model-specific; the [4, 4, 8] split is illustrative, not a production configuration.</p>
+          <p>In this worked example, T selects entries 0–1 from <code>r₀</code>, H selects entries 2–4 from <code>r₁</code>, and W selects entries 5–7 from <code>r₂</code>. The [2, 3, 3] split is for visualization only; production models use their own section sizes and coefficient layouts.</p>
         </div>
       </div>
       <div class="callout"><strong>What MRoPE adds:</strong> moving one patch to the right changes the W position but not T or H; moving down changes H; moving to another frame changes T. This preserves axis-specific relative-position information instead of expressing all offsets through one flattened index.</div>
@@ -345,17 +345,17 @@
   <footer>Study notes by Sonu Dixit · Built as a lightweight, dependency-free GitHub Pages page.</footer>
   <script>
     // Visualize the exact slice selection in the equation above.
-    // This is a pedagogical 16-entry coefficient-vector view, not a claim that
+    // This is a pedagogical half-dimensional coefficient-vector view, not a claim that
     // the full RoPE rotation matrix itself is a 1D vector.
     (function renderMropeVector() {
       const mount = document.getElementById("mrope-vector-visual");
       if (!mount) return;
 
-      const entries = Array.from({ length: 16 }, (_, i) => i);
+      const entries = Array.from({ length: 8 }, (_, i) => i);
       const sourceRows = [
-        { label: "r₀ (t = 0)", key: "t", start: 0, end: 4, slice: "r₀[0:4]" },
-        { label: "r₁ (h = 1)", key: "h", start: 4, end: 8, slice: "r₁[4:8]" },
-        { label: "r₂ (w = 2)", key: "w", start: 8, end: 16, slice: "r₂[8:16]" }
+        { label: "r₀ (t = 0)", key: "t", start: 0, end: 2, slice: "r₀[0:2]" },
+        { label: "r₁ (h = 1)", key: "h", start: 2, end: 5, slice: "r₁[2:5]" },
+        { label: "r₂ (w = 2)", key: "w", start: 5, end: 8, slice: "r₂[5:8]" }
       ];
 
       const rowMarkup = sourceRows.map(function (row) {
@@ -378,7 +378,7 @@
           return '<span class="assembled-cell" title="' + row.slice + ', source entry ' + i + '">' +
             i + '</span>';
         }).join("");
-        const countClass = indices.length === 8 ? "eight" : "four";
+        const countClass = indices.length === 2 ? "two" : "three";
         return '<div class="assembled-segment ' + row.key + '">' +
           '<div class="assembled-segment-label">' + row.slice + '</div>' +
           '<div class="assembled-cells ' + countClass + '">' + cells + '</div>' +
@@ -394,7 +394,7 @@
         '<div class="rotation-matrix">' + rowMarkup + '</div>' +
         '<p class="small"><strong>Concatenate the colored slices in order:</strong></p>' +
         '<div class="assembled-scroll"><div class="assembled-vector">' + segmentMarkup + '</div></div>' +
-        '<p class="rotation-footnote">Result has 16 entries: first the 4 selected time entries, then 4 height entries, then 8 width entries. The row labels indicate the position used to generate each source coefficient vector.</p>';
+        '<p class="rotation-footnote">Result has 8 frequency entries: first 2 selected time entries, then 3 height entries, then 3 width entries. The row labels indicate the position used to generate each source coefficient vector.</p>';
     }());
 
     (function () {
