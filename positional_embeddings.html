@@ -104,6 +104,15 @@
     .assembled-cells.four { grid-template-columns: repeat(4, minmax(0,1fr)); }
     .assembled-cell { background: #fff; border: 1px solid rgba(25,45,70,.12); border-radius: 4px; padding: 7px 1px; text-align: center; font: .66rem ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; }
     .rotation-footnote { margin-top: 12px; font-size: .84rem; color: var(--muted); }
+    .implementation-card { margin-top: 18px; }
+    .implementation-header { display: flex; flex-wrap: wrap; gap: 10px; justify-content: space-between; align-items: baseline; }
+    .implementation-header h3 { margin: 0; }
+    .source-link { font-size: .86rem; font-weight: 650; white-space: nowrap; }
+    .code-block { margin-top: 12px; overflow-x: auto; border: 1px solid #273449; border-radius: 12px; background: #111827; color: #e5edf7; }
+    .code-block pre { margin: 0; padding: 16px; font: .82rem/1.62 ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; white-space: pre; tab-size: 4; }
+    .code-block code { padding: 0; border-radius: 0; background: transparent; color: inherit; font: inherit; }
+    .code-note { margin-top: 10px; font-size: .86rem; color: var(--muted); }
+
 
     .freq { border-radius: 7px; min-height: 47px; display: grid; place-content: center; text-align: center; font-size: .79rem; font-weight: 750; color: #243348; border: 1px solid rgba(25,45,70,.08); }
     .freq small { font-size: .66rem; font-weight: 500; }
@@ -257,6 +266,33 @@
           <p>In this worked example, T selects entries 0–3 from <code>r₀</code>, H selects entries 4–5 from <code>r₁</code>, and W selects entries 6–7 from <code>r₂</code>. The [4, 2, 2] split is for visualization only; production models use their own section sizes and coefficient layouts.</p>
         </div>
       </div>
+      <div class="card implementation-card">
+        <div class="implementation-header">
+          <h3>Implementation: chunked MRoPE</h3>
+          <a class="source-link" href="https://github.com/huggingface/transformers/blob/main/src/transformers/models/qwen2_vl/modeling_qwen2_vl.py#L162-L167" target="_blank" rel="noopener noreferrer">View source on GitHub ↗</a>
+        </div>
+        <p class="muted small">This is the core of Qwen2-VL's <code>recomposition_frequencies</code> method, excerpted from Transformers with explanatory comments added.</p>
+        <div class="code-block"><pre><code>def recomposition_frequencies(self, freq):
+    # Shape: [3, batch, seq_len, head_dim // 2]
+    # Axis order on dim 0 is T, H, W.
+
+    # Split the frequency dimension into contiguous bands.
+    # For our toy example, mrope_section = [4, 2, 2]:
+    # band 0 has 4 entries, band 1 has 2, and band 2 has 2.
+    bands = freq.split(self.mrope_section, dim=-1)
+
+    # Select one position stream for each band:
+    # first band -> T (index 0), second -> H (index 1),
+    # third band -> W (index 2). Then concatenate the bands.
+    freq = torch.cat(
+        [band[i % 3] for i, band in enumerate(bands)],
+        dim=-1,
+    )
+
+    # Mirror the half-dimensional coefficients to head_dim.
+    return torch.cat((freq, freq), dim=-1)</code></pre></div>
+        <p class="code-note">For <code>[4, 2, 2]</code>, the selected slices are <code>r₀[0:4]</code>, <code>r₁[4:6]</code>, and <code>r₂[6:8]</code>. The first <code>cat</code> joins the selected T/H/W bands; the second duplicates the resulting half-vector for the model's split-half RoPE layout.</p>
+      </div>
       <div class="callout"><strong>What MRoPE adds:</strong> moving one patch to the right changes the W position but not T or H; moving down changes H; moving to another frame changes T. This preserves axis-specific relative-position information instead of expressing all offsets through one flattened index.</div>
     </section>
 
@@ -296,6 +332,32 @@
           </div>
         </div>
         <p class="rotation-footnote">The output is still one frequency vector. Unlike chunked MRoPE, its entries are selected in an interleaved order rather than concatenated as three contiguous slices. The final vector is then duplicated by the model's RoPE implementation to align with the full head dimension.</p>
+      </div>
+      <div class="card implementation-card">
+        <div class="implementation-header">
+          <h3>Implementation: interleaved MRoPE</h3>
+          <a class="source-link" href="https://github.com/huggingface/transformers/blob/main/src/transformers/models/qwen3_vl/modeling_qwen3_vl.py#L406-L415" target="_blank" rel="noopener noreferrer">View source on GitHub ↗</a>
+        </div>
+        <p class="muted small">This is the core of Qwen3-VL's text-side <code>recomposition_frequencies</code> method, excerpted from Transformers with comments added.</p>
+        <div class="code-block"><pre><code>def recomposition_frequencies(self, freq):
+    # Shape: [3, batch, seq_len, head_dim // 2]
+    # Axis order on dim 0 is T, H, W.
+
+    freqs_thw = freq[0]  # Start with T values at every index.
+
+    # Fill selected interleaved positions from H, then W.
+    # With mrope_section = [4, 2, 2]:
+    # H: slice(1, 2 * 3, 3) -> indices 1, 4
+    # W: slice(2, 2 * 3, 3) -> indices 2, 5
+    for dim, offset in enumerate((1, 2), start=1):
+        length = self.mrope_section[dim] * 3
+        idx = slice(offset, length, 3)
+        freqs_thw[..., idx] = freq[dim, ..., idx]
+
+    # Un-overwritten positions remain T (indices 0, 3, 6, 7).
+    # Duplicate the half-vector to match the full head dimension.
+    return torch.cat((freqs_thw, freqs_thw), dim=-1)</code></pre></div>
+        <p class="code-note">Unlike the chunked version, this method does not concatenate separate contiguous bands. It begins with T everywhere, then overwrites stride-3 positions with H and W. For our eight-entry <code>[4, 2, 2]</code> example, the final assignment is <code>[T, H, W, T, H, W, T, T]</code>.</p>
       </div>
       <p>The motivation is a more balanced frequency spectrum per axis. In chunked MRoPE, an axis may get only high-, mid-, or low-frequency entries; interleaving spreads its entries across a broader range of rotary frequencies. This is intended to improve spatial-temporal modeling, particularly for long videos.</p>
       <div class="callout"><strong>Implementation detail:</strong> Qwen3-VL's default `mrope_section = [24, 20, 20]` describes counts in the half-dimensional frequency tensor (64 entries for a 128-dimensional head), not scalar dimensions. Its implementation interleaves T/H/W with model-specific section lengths, so the real pattern is not a perfectly repeating cycle at the end: the remaining frequency slots are retained by the temporal stream.</div>
