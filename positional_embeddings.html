@@ -80,6 +80,13 @@
     .rotation-row-label { font: 700 .86rem/1.4 ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; color: var(--ink); }
     .rotation-grid-scroll, .assembled-scroll { min-width: 0; overflow-x: auto; }
     .rotation-cells { display: grid; grid-template-columns: repeat(8, minmax(0,1fr)); gap: 3px; min-width: 330px; }
+    .rotation-cells.interleaved { grid-template-columns: repeat(9, minmax(0,1fr)); min-width: 370px; }
+    .interleaved-result { display: grid; grid-template-columns: repeat(9, minmax(0,1fr)); gap: 4px; min-width: 370px; }
+    .interleaved-result-cell { min-height: 48px; display: grid; place-content: center; text-align: center; border: 1px solid var(--line); border-radius: 7px; padding: 4px 2px; font: .72rem/1.35 ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; overflow-wrap: anywhere; }
+    .interleaved-result-cell .source-axis { font: .63rem system-ui, sans-serif; opacity: .85; }
+    .interleaved-result-cell.selected-t { background: var(--blue); border-color: #8bb5ec; color: var(--blue-ink); }
+    .interleaved-result-cell.selected-h { background: var(--green); border-color: #83d7a2; color: var(--green-ink); }
+    .interleaved-result-cell.selected-w { background: var(--amber); border-color: #e7bd82; color: var(--amber-ink); }
     .rotation-cell { min-height: 35px; display: grid; place-items: center; border: 1px solid #e0e6ee; border-radius: 5px; background: #f0f3f7; color: #8a96a5; font: .68rem ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; }
     .rotation-cell.selected-t { background: var(--blue); border-color: #8bb5ec; color: var(--blue-ink); font-weight: 800; }
     .rotation-cell.selected-h { background: var(--green); border-color: #83d7a2; color: var(--green-ink); font-weight: 800; }
@@ -273,6 +280,25 @@
           </div>
         </div>
       </div>
+      <div class="card" style="margin-top:16px">
+        <h3>Build the Interleaved MRoPE vector</h3>
+        <p class="muted small">A small 9-entry example makes the every-third-slot pattern explicit. Use <code>mrope_section = [3, 3, 3]</code> and position <code>(t,h,w) = (0,1,2)</code>. Here each source vector has 9 frequency entries.</p>
+        <div class="formula">
+          r<sub>M</sub>[i] =
+          <span style="white-space:nowrap">r<sub>0</sub>[i] if i mod 3 = 0,</span>
+          <span style="white-space:nowrap">r<sub>1</sub>[i] if i mod 3 = 1,</span>
+          <span style="white-space:nowrap">r<sub>2</sub>[i] if i mod 3 = 2.</span><br>
+          <strong>r<sub>M</sub>(0,1,2) = [r<sub>0</sub>[0], r<sub>1</sub>[1], r<sub>2</sub>[2], r<sub>0</sub>[3], r<sub>1</sub>[4], r<sub>2</sub>[5], r<sub>0</sub>[6], r<sub>1</sub>[7], r<sub>2</sub>[8]]</strong>
+          <div class="secondary">This mirrors the interleaving rule: start from T frequencies, replace slots 1, 4, 7 with H frequencies, and slots 2, 5, 8 with W frequencies. Each selected value uses its original frequency index i.</div>
+        </div>
+        <div class="rotation-demo">
+          <p class="muted small">Each row shows one full source vector. The colored cells are the slots selected from that row; gray cells are overwritten or not used.</p>
+          <div id="interleaved-vector-visual" aria-label="Three source vectors showing every-third frequency slots selected, followed by the assembled interleaved vector">
+            <p class="muted small">The vector illustration is loading.</p>
+          </div>
+        </div>
+        <p class="rotation-footnote">The output is still one frequency vector. Unlike chunked MRoPE, its entries are selected in an interleaved order rather than concatenated as three contiguous slices. The final vector is then duplicated by the model's RoPE implementation to align with the full head dimension.</p>
+      </div>
       <p>The motivation is a more balanced frequency spectrum per axis. In chunked MRoPE, an axis may get only high-, mid-, or low-frequency entries; interleaving spreads its entries across a broader range of rotary frequencies. This is intended to improve spatial-temporal modeling, particularly for long videos.</p>
       <div class="callout"><strong>Implementation detail:</strong> Qwen3-VL's default `mrope_section = [24, 20, 20]` describes counts in the half-dimensional frequency tensor (64 entries for a 128-dimensional head), not scalar dimensions. Its implementation interleaves T/H/W with model-specific section lengths, so the real pattern is not a perfectly repeating cycle at the end: the remaining frequency slots are retained by the temporal stream.</div>
       <p class="muted small">Interleaving does not change the RoPE rotation identity and does not guarantee a higher attention score. It changes the frequencies available to each positional axis.</p>
@@ -395,6 +421,57 @@
         '<p class="small"><strong>Concatenate the colored slices in order:</strong></p>' +
         '<div class="assembled-scroll"><div class="assembled-vector">' + segmentMarkup + '</div></div>' +
         '<p class="rotation-footnote">Result has 8 frequency entries: first 2 selected time entries, then 3 height entries, then 3 width entries. The row labels indicate the position used to generate each source coefficient vector.</p>';
+    }());
+
+    // Visualize Qwen3-VL-style interleaving in a tiny 9-entry example.
+    // For mrope_section=[3,3,3], T remains at indices 0,3,6;
+    // H overwrites 1,4,7; W overwrites 2,5,8.
+    (function renderInterleavedMropeVector() {
+      const mount = document.getElementById("interleaved-vector-visual");
+      if (!mount) return;
+
+      const entries = Array.from({ length: 9 }, (_, i) => i);
+      const sources = [
+        { label: "r₀ (t = 0)", key: "t", selected: i => i % 3 === 0 },
+        { label: "r₁ (h = 1)", key: "h", selected: i => i % 3 === 1 },
+        { label: "r₂ (w = 2)", key: "w", selected: i => i % 3 === 2 }
+      ];
+
+      const rows = sources.map(source => {
+        const cells = entries.map(i => {
+          const selected = source.selected(i);
+          return '<span class="rotation-cell' +
+            (selected ? ' selected-' + source.key : '') +
+            '" title="' + source.label + ', frequency index ' + i +
+            (selected ? ' — selected in final vector' : ' — not selected') + '">' +
+            i + '</span>';
+        }).join("");
+        return '<div class="rotation-row">' +
+          '<div class="rotation-row-label">' + source.label + '</div>' +
+          '<div class="rotation-grid-scroll"><div class="rotation-cells interleaved">' +
+          cells + '</div></div></div>';
+      }).join("");
+
+      const axisAt = ["t", "h", "w"];
+      const sourceAt = ["r₀", "r₁", "r₂"];
+      const resultCells = entries.map(i => {
+        const axis = axisAt[i % 3];
+        const css = axis === "t" ? "selected-t" : axis === "h" ? "selected-h" : "selected-w";
+        return '<div class="interleaved-result-cell ' + css + '" title="Index ' + i +
+          ' selected from ' + sourceAt[i % 3] + '[' + i + ']">' +
+          sourceAt[i % 3] + '[' + i + ']' +
+          '<span class="source-axis">' + axis.toUpperCase() + ' · idx ' + i + '</span></div>';
+      }).join("");
+
+      mount.innerHTML =
+        '<div class="rotation-key">' +
+          '<span><i class="swatch t"></i>T positions: 0, 3, 6</span>' +
+          '<span><i class="swatch h"></i>H positions: 1, 4, 7</span>' +
+          '<span><i class="swatch w"></i>W positions: 2, 5, 8</span>' +
+        '</div>' +
+        '<div class="rotation-matrix">' + rows + '</div>' +
+        '<p class="small"><strong>Assembled interleaved vector — keep the same frequency index while switching the source axis:</strong></p>' +
+        '<div class="assembled-scroll"><div class="interleaved-result">' + resultCells + '</div></div>';
     }());
 
     (function () {
