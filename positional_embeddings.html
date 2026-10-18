@@ -146,17 +146,17 @@
         <h3>One sequence, one position index</h3>
         <p class="muted small">A 2 × 3 × 4 visual grid flattened into a sequence would assign each patch one scalar index.</p>
         <div class="chain" aria-label="Illustration of tokens with sequence positions">
-          <div class="token"><strong>Patch A</strong><span>p = 1</span></div><span class="arrow">→</span>
-          <div class="token"><strong>Patch B</strong><span>p = 5</span></div><span class="arrow">→</span>
-          <div class="token"><strong>Patch C</strong><span>p = 6</span></div><span class="arrow">→</span>
+          <div class="token"><strong>Patch (0,0,0)</strong><span>p = 1</span></div><span class="arrow">→</span>
+          <div class="token"><strong>Patch (0,1,0)</strong><span>p = 5</span></div><span class="arrow">→</span>
+          <div class="token"><strong>Patch (0,2,0)</strong><span>p = 6</span></div><span class="arrow">→</span>
           <div class="token"><strong>Text</strong><span>p = 24</span></div>
         </div>
         <p class="small muted">Flattening makes the relative sequence offset explicit, but the scalar index alone does not say whether two image patches differ by row, column, or frame.</p>
       </div>
-      <div class="grid" style="margin-top:16px">
+      <!-- <div class="grid" style="margin-top:16px">
         <div class="card flat"><h3>Why rotate?</h3><p>For each rotary pair, the rotation composition cancels absolute position and leaves a relative rotation:</p><div class="formula">R(p)ᵀR(s) = R(s − p)</div></div>
         <div class="card flat"><h3>What it does not guarantee</h3><p>RoPE does not force nearby tokens to receive higher attention scores. Attention also depends on the learned content vectors and the resulting dot product.</p></div>
-      </div>
+      </div> -->
     </section>
 
     <section id="mrope">
