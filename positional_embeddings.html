@@ -1,0 +1,563 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="Visual notes on RoPE, Multimodal RoPE (MRoPE), and Interleaved MRoPE for multimodal transformers.">
+  <title>RoPE, MRoPE & Interleaved MRoPE | Sonu Dixit</title>
+  <style>
+    :root {
+      --ink: #182230;
+      --muted: #536273;
+      --subtle: #718096;
+      --line: #dbe3ec;
+      --paper: #ffffff;
+      --wash: #f5f8fc;
+      --blue: #dbeafe;
+      --blue-ink: #1d4f91;
+      --green: #dcfce7;
+      --green-ink: #17653c;
+      --amber: #ffedd5;
+      --amber-ink: #914b12;
+      --violet: #ede9fe;
+      --violet-ink: #5b36a6;
+      --shadow: 0 8px 28px rgba(20, 37, 62, .06);
+      --radius: 18px;
+    }
+    * { box-sizing: border-box; }
+    html { scroll-behavior: smooth; scroll-padding-top: 90px; }
+    body {
+      margin: 0; color: var(--ink); background: var(--paper);
+      font: 16px/1.68 system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    }
+    a { color: #1859a9; text-underline-offset: 3px; }
+    a:hover { color: #103b73; }
+    .topbar { border-bottom: 1px solid var(--line); background: rgba(255,255,255,.95); }
+    .topbar-inner { max-width: 1080px; margin: auto; padding: 16px 24px; display: flex; gap: 18px; align-items: center; justify-content: space-between; }
+    .brand { font-weight: 750; letter-spacing: -.02em; color: var(--ink); text-decoration: none; }
+    .navlinks { display: flex; flex-wrap: wrap; gap: 16px; font-size: .91rem; }
+    .navlinks a { color: var(--muted); text-decoration: none; }
+    .navlinks a:hover { color: var(--ink); text-decoration: underline; }
+    main { max-width: 1080px; padding: 0 24px 80px; margin: 0 auto; }
+    .hero { padding: 60px 0 38px; }
+    .eyebrow { font-size: .78rem; font-weight: 750; text-transform: uppercase; letter-spacing: .12em; color: #42658d; }
+    h1 { font-size: clamp(2.2rem, 5vw, 3.5rem); letter-spacing: -.045em; line-height: 1.12; margin: 10px 0 18px; max-width: 840px; }
+    .lede { font-size: 1.13rem; color: var(--muted); max-width: 780px; margin: 0; }
+    .meta { margin-top: 20px; display: flex; flex-wrap: wrap; gap: 8px; }
+    .pill { border: 1px solid var(--line); border-radius: 999px; padding: 4px 10px; color: var(--muted); font-size: .8rem; background: #fff; }
+    .toc { display: flex; flex-wrap: wrap; gap: 9px; margin: 16px 0 34px; }
+    .toc a { display: inline-block; border: 1px solid var(--line); border-radius: 999px; padding: 7px 12px; text-decoration: none; color: var(--muted); font-size: .9rem; }
+    .toc a:hover { background: var(--wash); color: var(--ink); }
+    section { margin-top: 54px; }
+    h2 { letter-spacing: -.03em; line-height: 1.2; font-size: clamp(1.55rem, 3vw, 2.15rem); margin: 0 0 14px; }
+    h3 { font-size: 1.15rem; line-height: 1.3; margin: 0 0 8px; }
+    p { margin: 10px 0; }
+    .muted { color: var(--muted); }
+    .small { font-size: .88rem; }
+    .grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 16px; }
+    .card { border: 1px solid var(--line); border-radius: var(--radius); padding: 22px; background: var(--paper); box-shadow: var(--shadow); min-width: 0; }
+    .card.flat { box-shadow: none; background: var(--wash); }
+    .callout { border-left: 4px solid #7da3d5; padding: 12px 16px; background: #f2f7fd; border-radius: 0 10px 10px 0; margin: 18px 0; }
+    .formula { overflow-x: auto; border: 1px solid var(--line); border-radius: 12px; background: var(--wash); padding: 14px 16px; font: .96rem/1.8 ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; }
+    .formula .secondary { color: var(--muted); font: .86rem/1.6 system-ui, sans-serif; }
+    .chain { display: flex; gap: 8px; align-items: center; overflow-x: auto; padding: 10px 2px 14px; }
+    .token { min-width: 62px; text-align: center; border: 1px solid #cbd8e7; border-radius: 10px; background: #f4f8fd; padding: 10px 7px; }
+    .token strong { display: block; font-size: .85rem; }
+    .token span { font-size: .75rem; color: var(--muted); }
+    .arrow { color: var(--subtle); flex: 0 0 auto; }
+    .axes { display: grid; grid-template-columns: repeat(3, minmax(0,1fr)); gap: 8px; margin: 14px 0; }
+    .axis { border-radius: 12px; padding: 12px; min-width: 0; }
+    .axis b { display: block; margin-bottom: 2px; }
+    .axis.t { background: var(--blue); color: var(--blue-ink); }
+    .axis.h { background: var(--green); color: var(--green-ink); }
+    .axis.w { background: var(--amber); color: var(--amber-ink); }
+    .freq-row { display: grid; grid-template-columns: repeat(12, minmax(0,1fr)); gap: 4px; margin: 12px 0; }
+    .frequency-scroll { overflow-x: auto; }
+    .freq-row.wide8 { grid-template-columns: repeat(8, minmax(0,1fr)); min-width: 330px; }
+    .rotation-demo { margin-top: 18px; padding: 16px; border: 1px solid var(--line); border-radius: 14px; background: #fbfdff; }
+    .rotation-demo h3 { margin-bottom: 6px; }
+    .rotation-row { display: grid; grid-template-columns: 104px minmax(0,1fr); gap: 10px; align-items: center; margin: 11px 0; }
+    .rotation-row-label { font: 700 .86rem/1.4 ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; color: var(--ink); }
+    .rotation-grid-scroll, .assembled-scroll { min-width: 0; overflow-x: auto; }
+    .rotation-cells { display: grid; grid-template-columns: repeat(8, minmax(0,1fr)); gap: 3px; min-width: 330px; }
+    .rotation-cells.interleaved { grid-template-columns: repeat(8, minmax(0,1fr)); min-width: 330px; }
+    .interleaved-result { display: grid; grid-template-columns: repeat(8, minmax(0,1fr)); gap: 4px; min-width: 330px; }
+    .interleaved-result-cell { min-height: 48px; display: grid; place-content: center; text-align: center; border: 1px solid var(--line); border-radius: 7px; padding: 4px 2px; font: .72rem/1.35 ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; overflow-wrap: anywhere; }
+    .interleaved-result-cell .source-axis { font: .63rem system-ui, sans-serif; opacity: .85; }
+    .interleaved-result-cell.selected-t { background: var(--blue); border-color: #8bb5ec; color: var(--blue-ink); }
+    .interleaved-result-cell.selected-h { background: var(--green); border-color: #83d7a2; color: var(--green-ink); }
+    .interleaved-result-cell.selected-w { background: var(--amber); border-color: #e7bd82; color: var(--amber-ink); }
+    .rotation-cell { min-height: 35px; display: grid; place-items: center; border: 1px solid #e0e6ee; border-radius: 5px; background: #f0f3f7; color: #8a96a5; font: .68rem ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; }
+    .rotation-cell.selected-t { background: var(--blue); border-color: #8bb5ec; color: var(--blue-ink); font-weight: 800; }
+    .rotation-cell.selected-h { background: var(--green); border-color: #83d7a2; color: var(--green-ink); font-weight: 800; }
+    .rotation-cell.selected-w { background: var(--amber); border-color: #e7bd82; color: var(--amber-ink); font-weight: 800; }
+    .rotation-key { display: flex; flex-wrap: wrap; gap: 10px 14px; color: var(--muted); font-size: .8rem; margin: 10px 0 16px; }
+    .rotation-key span { display: inline-flex; align-items: center; gap: 6px; }
+    .assembled-vector { display: grid; grid-template-columns: minmax(110px,2fr) minmax(135px,3fr) minmax(135px,3fr); gap: 6px; min-width: 420px; }
+    .assembled-segment { padding: 9px; border: 1px solid var(--line); border-radius: 9px; }
+    .assembled-segment.t { background: #eef5ff; border-color: #b8d2f3; }
+    .assembled-segment.h { background: #effbf3; border-color: #b3e5c2; }
+    .assembled-segment.w { background: #fff7ec; border-color: #f0d2a8; }
+    .assembled-segment-label { font: 700 .78rem/1.4 ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; overflow-wrap: anywhere; }
+    .assembled-cells { display: grid; gap: 3px; margin-top: 7px; }
+    .assembled-cells.two { grid-template-columns: repeat(2, minmax(0,1fr)); }
+    .assembled-cells.four { grid-template-columns: repeat(4, minmax(0,1fr)); }
+    .assembled-cell { background: #fff; border: 1px solid rgba(25,45,70,.12); border-radius: 4px; padding: 7px 1px; text-align: center; font: .66rem ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; }
+    .rotation-footnote { margin-top: 12px; font-size: .84rem; color: var(--muted); }
+    .implementation-card { margin-top: 18px; }
+    .implementation-header { display: flex; flex-wrap: wrap; gap: 10px; justify-content: space-between; align-items: baseline; }
+    .implementation-header h3 { margin: 0; }
+    .source-link { font-size: .86rem; font-weight: 650; white-space: nowrap; }
+    .code-block { margin-top: 12px; overflow-x: auto; border: 1px solid #273449; border-radius: 12px; background: #111827; color: #e5edf7; }
+    .code-block pre { margin: 0; padding: 16px; font: .82rem/1.62 ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; white-space: pre; tab-size: 4; }
+    .code-block code { padding: 0; border-radius: 0; background: transparent; color: inherit; font: inherit; }
+    .code-note { margin-top: 10px; font-size: .86rem; color: var(--muted); }
+
+
+    .freq { border-radius: 7px; min-height: 47px; display: grid; place-content: center; text-align: center; font-size: .79rem; font-weight: 750; color: #243348; border: 1px solid rgba(25,45,70,.08); }
+    .freq small { font-size: .66rem; font-weight: 500; }
+    .freq.t { background: var(--blue); }
+    .freq.h { background: var(--green); }
+    .freq.w { background: var(--amber); }
+    .legend { display: flex; flex-wrap: wrap; gap: 12px; font-size: .83rem; color: var(--muted); }
+    .legend span { display: inline-flex; align-items: center; gap: 6px; }
+    .swatch { width: 11px; height: 11px; display: inline-block; border-radius: 3px; }
+    .swatch.t { background: #9ec5f5; } .swatch.h { background: #8de0aa; } .swatch.w { background: #f6c47d; }
+    .demo-controls { display: flex; flex-wrap: wrap; gap: 10px; align-items: center; margin: 14px 0; }
+    label { font-size: .9rem; color: var(--muted); }
+    select, button { font: inherit; border-radius: 9px; border: 1px solid #c7d4e3; padding: 9px 12px; background: white; color: var(--ink); }
+    button { cursor: pointer; font-weight: 650; }
+    button:hover { background: var(--wash); }
+    .output { background: var(--wash); border: 1px solid var(--line); border-radius: 12px; padding: 14px 16px; margin-top: 14px; }
+    .output p { margin: 5px 0; }
+    .table-wrap { overflow-x: auto; border: 1px solid var(--line); border-radius: 14px; }
+    table { border-collapse: collapse; width: 100%; min-width: 760px; }
+    th, td { border-bottom: 1px solid var(--line); padding: 13px 14px; text-align: left; vertical-align: top; }
+    th { background: var(--wash); font-size: .86rem; }
+    td { font-size: .92rem; }
+    tr:last-child td { border-bottom: 0; }
+    code { background: #f0f4f8; padding: .12em .35em; border-radius: 5px; font-size: .9em; }
+    .sources li { margin: 9px 0; }
+    footer { border-top: 1px solid var(--line); color: var(--muted); font-size: .87rem; padding: 24px; text-align: center; }
+    @media (max-width: 720px) {
+      .topbar-inner { align-items: flex-start; flex-direction: column; padding: 14px 18px; }
+      main { padding: 0 18px 60px; }
+      .hero { padding-top: 42px; }
+      .grid { grid-template-columns: 1fr; }
+      .axes { gap: 6px; }
+      .axis { padding: 9px; font-size: .88rem; }
+      .freq-row { gap: 2px; }
+      .freq { min-height: 40px; font-size: .68rem; }
+      .freq small { font-size: .56rem; }
+    }
+  </style>
+</head>
+<body>
+  <header class="topbar">
+    <div class="topbar-inner">
+      <a class="brand" href="index.html">Sonu Dixit</a>
+      <nav class="navlinks" aria-label="Primary navigation">
+        <a href="index.html">Home</a>
+        <a href="notes_blogs.html">Notes/blogs</a>
+        <a href="#comparison">Comparison</a>
+        <a href="#references">References</a>
+      </nav>
+    </div>
+  </header>
+
+  <main>
+    <header class="hero">
+      <div class="eyebrow">Study notes · Transformer architectures</div>
+      <h1>RoPE, MRoPE &amp; Interleaved MRoPE</h1>
+      <p class="lede">A visual guide to how rotary position embeddings encode sequence order, extend to the time–height–width axes of visual tokens, and distribute rotary frequencies across those axes.</p>
+      <div class="meta"><span class="pill">Self-attention</span><span class="pill">Vision-language models</span><span class="pill">Qwen2-VL / Qwen3-VL</span></div>
+    </header>
+
+    <nav class="toc" aria-label="On this page">
+      <a href="#rope">1. RoPE</a><a href="#mrope">2. MRoPE</a><a href="#interleaved">3. Interleaved MRoPE</a><a href="#demo">Explore offsets</a><a href="#comparison">Comparison table</a>
+    </nav>
+
+    <section id="rope">
+      <div class="eyebrow">01 · One position axis</div>
+      <h2>RoPE: encode relative sequence position</h2>
+      <p>Rotary Position Embedding (RoPE) rotates each 2D pair in a query or key vector by an angle determined by the token's sequence position. Different pairs use different frequencies.</p>
+      <div class="formula">q̃ₚ = R(p)q &nbsp;&nbsp; k̃ₛ = R(s)k<br>q̃ₚᵀk̃ₛ = qᵀR(s − p)k
+        <div class="secondary">The positional part of the attention score depends on the relative offset (s − p), while the content vectors q and k still matter.</div>
+      </div>
+      <div class="card" style="margin-top:16px">
+        <h3>One sequence, one position index</h3>
+        <p class="muted small">A 2 × 3 × 4 visual grid flattened into a sequence would assign each patch one scalar index.</p>
+        <div class="chain" aria-label="Illustration of tokens with sequence positions">
+          <div class="token"><strong>Patch (0,0,0)</strong><span>p = 1</span></div><span class="arrow">→</span>
+          <div class="token"><strong>Patch (0,1,0)</strong><span>p = 5</span></div><span class="arrow">→</span>
+          <div class="token"><strong>Patch (0,2,0)</strong><span>p = 6</span></div><span class="arrow">→</span>
+          <div class="token"><strong>Text</strong><span>p = 24</span></div>
+        </div>
+        <p class="small muted">Flattening makes the relative sequence offset explicit, but the scalar index alone does not say whether two image patches differ by row, column, or frame.</p>
+      </div>
+      <!-- <div class="grid" style="margin-top:16px">
+        <div class="card flat"><h3>Why rotate?</h3><p>For each rotary pair, the rotation composition cancels absolute position and leaves a relative rotation:</p><div class="formula">R(p)ᵀR(s) = R(s − p)</div></div>
+        <div class="card flat"><h3>What it does not guarantee</h3><p>RoPE does not force nearby tokens to receive higher attention scores. Attention also depends on the learned content vectors and the resulting dot product.</p></div>
+      </div> -->
+    </section>
+
+    <section id="mrope">
+      <div class="eyebrow">02 · Three position axes</div>
+      <h2>MRoPE: distinguish time, height, and width</h2>
+      <p>Multimodal RoPE (MRoPE), introduced in Qwen2-VL, gives visual tokens a position triple <code>(t, h, w)</code>. The rotation math is still RoPE; each rotary-frequency section selects one coordinate from the triple.</p>
+      <div class="grid">
+        <div class="card">
+          <h3>Visual token = 3D position</h3>
+          <p class="muted small">Example: two frames, each represented as a 3 × 4 patch grid.</p>
+          <svg viewBox="0 0 340 220" role="img" aria-label="Two frames with a 3 by 4 grid of patches" style="width:100%;height:auto;display:block;margin:8px auto">
+            <text x="12" y="18" font-size="12" font-weight="700" fill="#536273">Frame t = 0</text>
+            <text x="184" y="18" font-size="12" font-weight="700" fill="#536273">Frame t = 1</text>
+            <g transform="translate(12,30)">
+              <rect width="132" height="96" rx="8" fill="#f7faff" stroke="#cbd8e7"/>
+              <g fill="#dbeafe" stroke="#94b9e8">
+                <rect x="5" y="5" width="28" height="26" rx="4"/><rect x="37" y="5" width="28" height="26" rx="4"/><rect x="69" y="5" width="28" height="26" rx="4"/><rect x="101" y="5" width="26" height="26" rx="4"/>
+                <rect x="5" y="35" width="28" height="26" rx="4"/><rect x="37" y="35" width="28" height="26" rx="4"/><rect x="69" y="35" width="28" height="26" rx="4"/><rect x="101" y="35" width="26" height="26" rx="4"/>
+                <rect x="5" y="65" width="28" height="26" rx="4"/><rect x="37" y="65" width="28" height="26" rx="4"/><rect x="69" y="65" width="28" height="26" rx="4"/><rect x="101" y="65" width="26" height="26" rx="4"/>
+              </g>
+              <rect x="37" y="35" width="28" height="26" rx="4" fill="#2563eb" stroke="#1e40af"/>
+              <text x="51" y="52" text-anchor="middle" font-size="11" fill="#fff" font-weight="700">A</text>
+            </g>
+            <g transform="translate(184,30)">
+              <rect width="132" height="96" rx="8" fill="#fffaf2" stroke="#e8d3b4"/>
+              <g fill="#ffedd5" stroke="#e6bd83">
+                <rect x="5" y="5" width="28" height="26" rx="4"/><rect x="37" y="5" width="28" height="26" rx="4"/><rect x="69" y="5" width="28" height="26" rx="4"/><rect x="101" y="5" width="26" height="26" rx="4"/>
+                <rect x="5" y="35" width="28" height="26" rx="4"/><rect x="37" y="35" width="28" height="26" rx="4"/><rect x="69" y="35" width="28" height="26" rx="4"/><rect x="101" y="35" width="26" height="26" rx="4"/>
+                <rect x="5" y="65" width="28" height="26" rx="4"/><rect x="37" y="65" width="28" height="26" rx="4"/><rect x="69" y="65" width="28" height="26" rx="4"/><rect x="101" y="65" width="26" height="26" rx="4"/>
+              </g>
+              <rect x="37" y="35" width="28" height="26" rx="4" fill="#b45309" stroke="#92400e"/>
+              <text x="51" y="52" text-anchor="middle" font-size="11" fill="#fff" font-weight="700">B</text>
+            </g>
+            <text x="12" y="151" font-size="12" fill="#182230">A = (0, 1, 1)</text>
+            <text x="184" y="151" font-size="12" fill="#182230">B = (1, 1, 1)</text>
+            <path d="M 144 170 C 160 190, 175 190, 192 170" stroke="#718096" stroke-width="1.5" fill="none" stroke-dasharray="4 3"/>
+            <text x="170" y="210" text-anchor="middle" font-size="11" fill="#536273">Same row/column, different frame</text>
+          </svg>
+          <div class="axes"><div class="axis t"><b>T · Time</b><span class="small">Which frame?</span></div><div class="axis h"><b>H · Height</b><span class="small">Which row?</span></div><div class="axis w"><b>W · Width</b><span class="small">Which column?</span></div></div>
+        </div>
+        <div class="card">
+          <h3>Chunked frequency allocation</h3>
+                    <p class="muted small">Small worked example: 8 frequency entries split as 4 for T, 2 for H, and 2 for W (<code>mrope_section = [4, 2, 2]</code>). Each cell is one entry in the half-dimensional frequency tensor.</p>
+          <div class="frequency-scroll">
+            <div class="freq-row wide8" aria-label="Chunked MRoPE frequency allocation with 4 time, 2 height, and 2 width entries">
+              <div class="freq t">0<small>T</small></div><div class="freq t">1<small>T</small></div><div class="freq t">2<small>T</small></div><div class="freq t">3<small>T</small></div>
+              <div class="freq h">4<small>H</small></div><div class="freq h">5<small>H</small></div>
+              <div class="freq w">6<small>W</small></div><div class="freq w">7<small>W</small></div>
+            </div>
+          </div>
+          <div class="legend"><span><i class="swatch t"></i>Time frequencies</span><span><i class="swatch h"></i>Height frequencies</span><span><i class="swatch w"></i>Width frequencies</span></div>
+          <div class="formula" style="margin-top:15px">
+            angleᵢ = position[axis(i)] × θᵢ<br>
+            mrope_section = [4, 2, 2], &nbsp; position = (t,h,w) = (0,1,2)<br>
+            <strong>r<sub>M</sub>(0,1,2) = concat(r<sub>0</sub>[0:4], r<sub>1</sub>[4:6], r<sub>2</sub>[6:8])</strong>
+            <div class="secondary">For this toy example, each r<sub>p</sub> has 8 frequency entries (the half-dimensional frequency tensor). Slices are half-open: [0:4] selects entries 0–3, [4:6] selects 4–5, and [6:8] selects 6–7. The model then duplicates selected frequency coefficients to match the full head dimension; cosine and sine coefficients together implement the rotation.</div>
+          </div>
+          <div class="rotation-demo">
+            <h3>Build the MRoPE vector for position (0, 1, 2)</h3>
+            <p class="muted small">Each source row has 8 entries. Keep the colored slice for its axis, then concatenate the selected entries. Gray cells are not selected from that row.</p>
+            <div id="mrope-vector-visual" aria-label="Three 8-entry source coefficient vectors with selected sections and the concatenated 8-entry MRoPE frequency vector">
+              <p class="muted small">The vector illustration is loading. The equation above shows the complete selection rule.</p>
+            </div>
+          </div>
+          <p>In this worked example, T selects entries 0–3 from <code>r₀</code>, H selects entries 4–5 from <code>r₁</code>, and W selects entries 6–7 from <code>r₂</code>. The [4, 2, 2] split is for visualization only; production models use their own section sizes and coefficient layouts.</p>
+        </div>
+      </div>
+      <div class="card implementation-card">
+        <div class="implementation-header">
+          <h3>Implementation: chunked MRoPE</h3>
+          <a class="source-link" href="https://github.com/huggingface/transformers/blob/main/src/transformers/models/qwen2_vl/modeling_qwen2_vl.py#L162-L167" target="_blank" rel="noopener noreferrer">View source on GitHub ↗</a>
+        </div>
+        <p class="muted small">This is the core of Qwen2-VL's <code>recomposition_frequencies</code> method, excerpted from Transformers with explanatory comments added.</p>
+        <div class="code-block"><pre><code>def recomposition_frequencies(self, freq):
+    # Shape: [3, batch, seq_len, head_dim // 2]
+    # Axis order on dim 0 is T, H, W.
+
+    # Split the frequency dimension into contiguous bands.
+    # For our toy example, mrope_section = [4, 2, 2]:
+    # band 0 has 4 entries, band 1 has 2, and band 2 has 2.
+    bands = freq.split(self.mrope_section, dim=-1)
+
+    # Select one position stream for each band:
+    # first band -> T (index 0), second -> H (index 1),
+    # third band -> W (index 2). Then concatenate the bands.
+    freq = torch.cat(
+        [band[i % 3] for i, band in enumerate(bands)],
+        dim=-1,
+    )
+
+    # Mirror the half-dimensional coefficients to head_dim.
+    return torch.cat((freq, freq), dim=-1)</code></pre></div>
+        <p class="code-note">For <code>[4, 2, 2]</code>, the selected slices are <code>r₀[0:4]</code>, <code>r₁[4:6]</code>, and <code>r₂[6:8]</code>. The first <code>cat</code> joins the selected T/H/W bands; the second duplicates the resulting half-vector for the model's split-half RoPE layout.</p>
+      </div>
+      <div class="callout"><strong>What MRoPE adds:</strong> moving one patch to the right changes the W position but not T or H; moving down changes H; moving to another frame changes T. This preserves axis-specific relative-position information instead of expressing all offsets through one flattened index.</div>
+    </section>
+
+    <section id="interleaved">
+      <div class="eyebrow">03 · Frequency allocation</div>
+      <h2>Interleaved MRoPE: distribute frequencies across axes</h2>
+      <p>Qwen3-VL's Interleaved MRoPE changes how frequency entries are assigned to T, H, and W. Rather than giving each axis a single contiguous band, it interleaves axis assignments across the spectrum, so each axis receives frequencies from multiple scales.</p>
+      <div class="grid">
+        <div class="card">
+          <h3>Chunked MRoPE</h3>
+          <p class="small muted">Same toy configuration: <code>mrope_section = [4, 2, 2]</code>. The first 4 entries use T, the next 2 use H, and the final 2 use W.</p>
+          <div class="freq-row wide8">
+            <div class="freq t">0</div><div class="freq t">1</div><div class="freq t">2</div><div class="freq t">3</div><div class="freq h">4</div><div class="freq h">5</div><div class="freq w">6</div><div class="freq w">7</div>
+          </div>
+        </div>
+        <div class="card">
+          <h3>Interleaved MRoPE</h3>
+          <p class="small muted">Same toy configuration: <code>mrope_section = [4, 2, 2]</code>. H overwrites indices 1 and 4; W overwrites indices 2 and 5; remaining indices stay T.</p>
+          <div class="freq-row wide8">
+            <div class="freq t">0</div><div class="freq h">1</div><div class="freq w">2</div><div class="freq t">3</div><div class="freq h">4</div><div class="freq w">5</div><div class="freq t">6</div><div class="freq t">7</div>
+          </div>
+        </div>
+      </div>
+      <div class="card" style="margin-top:16px">
+        <h3>Build the Interleaved MRoPE vector</h3>
+        <p class="muted small">Use the same 8-entry toy configuration as the chunked example: <code>mrope_section = [4, 2, 2]</code> and position <code>(t,h,w) = (0,1,2)</code>.</p>
+        <div class="formula">
+          Start with T: <code>r₀[0:8]</code><br>
+          H overwrites indices <code>1, 4</code>; W overwrites indices <code>2, 5</code>.<br>
+          <strong>r<sub>M</sub>(0,1,2) = [r<sub>0</sub>[0], r<sub>1</sub>[1], r<sub>2</sub>[2], r<sub>0</sub>[3], r<sub>1</sub>[4], r<sub>2</sub>[5], r<sub>0</sub>[6], r<sub>0</sub>[7]]</strong>
+          <div class="secondary">This follows the Qwen3-VL-style indexing rule: for H, use slice(1, mrope_section[1] × 3, 3); for W, use slice(2, mrope_section[2] × 3, 3). With [4,2,2], those select H indices 1 and 4, and W indices 2 and 5. Any un-overwritten slot remains from T.</div>
+        </div>
+        <div class="rotation-demo">
+          <p class="muted small">Each row shows one full source vector. The colored cells are the slots selected from that row; gray cells are overwritten or not used.</p>
+          <div id="interleaved-vector-visual" aria-label="Three source vectors showing every-third frequency slots selected, followed by the assembled interleaved vector">
+            <p class="muted small">The vector illustration is loading.</p>
+          </div>
+        </div>
+        <p class="rotation-footnote">The output is still one frequency vector. Unlike chunked MRoPE, its entries are selected in an interleaved order rather than concatenated as three contiguous slices. The final vector is then duplicated by the model's RoPE implementation to align with the full head dimension.</p>
+      </div>
+      <div class="card implementation-card">
+        <div class="implementation-header">
+          <h3>Implementation: interleaved MRoPE</h3>
+          <a class="source-link" href="https://github.com/huggingface/transformers/blob/main/src/transformers/models/qwen3_vl/modeling_qwen3_vl.py#L406-L415" target="_blank" rel="noopener noreferrer">View source on GitHub ↗</a>
+        </div>
+        <p class="muted small">This is the core of Qwen3-VL's text-side <code>recomposition_frequencies</code> method, excerpted from Transformers with comments added.</p>
+        <div class="code-block"><pre><code>def recomposition_frequencies(self, freq):
+    # Shape: [3, batch, seq_len, head_dim // 2]
+    # Axis order on dim 0 is T, H, W.
+
+    freqs_thw = freq[0]  # Start with T values at every index.
+
+    # Fill selected interleaved positions from H, then W.
+    # With mrope_section = [4, 2, 2]:
+    # H: slice(1, 2 * 3, 3) -> indices 1, 4
+    # W: slice(2, 2 * 3, 3) -> indices 2, 5
+    for dim, offset in enumerate((1, 2), start=1):
+        length = self.mrope_section[dim] * 3
+        idx = slice(offset, length, 3)
+        freqs_thw[..., idx] = freq[dim, ..., idx]
+
+    # Un-overwritten positions remain T (indices 0, 3, 6, 7).
+    # Duplicate the half-vector to match the full head dimension.
+    return torch.cat((freqs_thw, freqs_thw), dim=-1)</code></pre></div>
+        <p class="code-note">Unlike the chunked version, this method does not concatenate separate contiguous bands. It begins with T everywhere, then overwrites stride-3 positions with H and W. For our eight-entry <code>[4, 2, 2]</code> example, the final assignment is <code>[T, H, W, T, H, W, T, T]</code>.</p>
+      </div>
+      <p>The motivation is a more balanced frequency spectrum per axis. In chunked MRoPE, an axis may get only high-, mid-, or low-frequency entries; interleaving spreads its entries across a broader range of rotary frequencies. This is intended to improve spatial-temporal modeling, particularly for long videos.</p>
+      <div class="callout"><strong>Implementation detail:</strong> Qwen3-VL's default `mrope_section = [24, 20, 20]` describes counts in the half-dimensional frequency tensor (64 entries for a 128-dimensional head), not scalar dimensions. Its implementation interleaves T/H/W with model-specific section lengths, so the real pattern is not a perfectly repeating cycle at the end: the remaining frequency slots are retained by the temporal stream.</div>
+      <p class="muted small">Interleaving does not change the RoPE rotation identity and does not guarantee a higher attention score. It changes the frequencies available to each positional axis.</p>
+    </section>
+
+    <section id="demo">
+      <div class="eyebrow">Try it · Relative offsets</div>
+      <h2>Explore how the axes differ</h2>
+      <p>Compare two patches in a 2-frame, 3-row, 4-column grid. Change the relationship to see how flattened 1D positions differ from the structured MRoPE offset.</p>
+      <div class="card">
+        <div class="demo-controls">
+          <label for="scenario">Patch relationship</label>
+          <select id="scenario">
+            <option value="row">Move down one row: (0,0,1) → (0,1,1)</option>
+            <option value="column">Move right one column: (0,0,1) → (0,0,2)</option>
+            <option value="frame">Move forward one frame: (0,0,1) → (1,0,1)</option>
+            <option value="diagonal">Move down and right: (0,0,1) → (0,1,2)</option>
+          </select>
+        </div>
+        <div class="output" id="demo-output" aria-live="polite">
+          <p><strong>Patch A:</strong> <code>(t,h,w) = (0,0,1)</code>, flattened index 1.</p>
+          <p><strong>Patch B:</strong> <code>(t,h,w) = (0,1,1)</code>, flattened index 5.</p>
+          <p><strong>1D RoPE:</strong> relative sequence offset = 4.</p>
+          <p><strong>MRoPE / Interleaved MRoPE:</strong> relative axis offset = <code>(0,1,0)</code>; only height has a non-zero coordinate difference.</p>
+        </div>
+        <p class="muted small">This shows positional offsets only. It does not calculate the final attention score: that also depends on Q and K content vectors.</p>
+      </div>
+    </section>
+
+    <section id="comparison">
+      <div class="eyebrow">At a glance</div>
+      <h2>RoPE vs MRoPE vs Interleaved MRoPE</h2>
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>Property</th><th>RoPE (1D)</th><th>MRoPE (chunked)</th><th>Interleaved MRoPE</th></tr></thead>
+          <tbody>
+            <tr><td><strong>Position representation</strong></td><td>Scalar sequence position <code>p</code></td><td>Triple <code>(t,h,w)</code> for visual tokens</td><td>Same T/H/W position representation</td></tr>
+            <tr><td><strong>How rotation works</strong></td><td>Standard RoPE rotations, every pair indexed by <code>p</code></td><td>Same rotation; each frequency band selects T, H, or W coordinate</td><td>Same rotation; axis assignment is interleaved across frequency indices</td></tr>
+            <tr><td><strong>Frequency assignment</strong></td><td>All token positions use the full frequency schedule</td><td>Contiguous frequency bands assigned to axes</td><td>Each axis receives entries distributed across the frequency spectrum</td></tr>
+            <tr><td><strong>Captures axis-specific offsets?</strong></td><td>Not explicitly from the flattened index alone</td><td>Yes</td><td>Yes</td></tr>
+            <tr><td><strong>Motivation / trade-off</strong></td><td>Simple, effective sequence-relative position encoding</td><td>Multidimensional position for image/video tokens; axis-specific frequency ranges can be imbalanced</td><td>More balanced frequency coverage per axis; designed to improve spatial-temporal and long-video modeling</td></tr>
+            <tr><td><strong>Reference example</strong></td><td>Standard transformer RoPE</td><td>Qwen2-VL</td><td>Qwen3-VL</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <p class="muted small">These are conceptual differences. Exact section lengths, axis order, text position continuation, and layout conventions are implementation-specific.</p>
+    </section>
+
+    <section id="takeaways">
+      <h2>Takeaways</h2>
+      <div class="grid">
+        <div class="card flat"><h3>RoPE</h3><p>Position enters attention through rotations; the composition property gives a relative offset.</p></div>
+        <div class="card flat"><h3>MRoPE</h3><p>Visual tokens use separate temporal, height, and width coordinates, each controlling its assigned rotary frequencies.</p></div>
+        <div class="card flat"><h3>Interleaved MRoPE</h3><p>Changes the assignment of frequency entries, spreading each axis across the spectrum rather than giving it one contiguous band.</p></div>
+        <div class="card flat"><h3>Important caveat</h3><p>Neither method guarantees higher attention to nearby patches. They define positional structure; learned Q/K content determines the final score.</p></div>
+      </div>
+    </section>
+
+    <section id="references">
+      <div class="eyebrow">Further reading</div>
+      <h2>References and implementation</h2>
+      <ol class="sources">
+        <li><a href="https://arxiv.org/abs/2409.12191" target="_blank" rel="noopener noreferrer">Qwen2-VL: Enhancing Vision-Language Model's Perception of the World at Any Resolution</a> — the M-RoPE formulation and multimodal position coordinates.</li>
+        <li><a href="https://arxiv.org/abs/2511.21631" target="_blank" rel="noopener noreferrer">Qwen3-VL Technical Report</a> — Interleaved MRoPE and its motivation.</li>
+        <li><a href="https://github.com/huggingface/transformers/blob/main/src/transformers/models/qwen2_vl/modeling_qwen2_vl.py" target="_blank" rel="noopener noreferrer">Hugging Face Transformers: Qwen2-VL implementation</a> — chunked MRoPE frequency recomposition.</li>
+        <li><a href="https://github.com/huggingface/transformers/blob/main/src/transformers/models/qwen3_vl/modeling_qwen3_vl.py" target="_blank" rel="noopener noreferrer">Hugging Face Transformers: Qwen3-VL implementation</a> — interleaved frequency allocation.</li>
+      </ol>
+    </section>
+  </main>
+  <footer>Study notes by Sonu Dixit · Built as a lightweight, dependency-free GitHub Pages page.</footer>
+  <script>
+    // Visualize the exact slice selection in the equation above.
+    // This is a pedagogical half-dimensional coefficient-vector view, not a claim that
+    // the full RoPE rotation matrix itself is a 1D vector.
+    (function renderMropeVector() {
+      const mount = document.getElementById("mrope-vector-visual");
+      if (!mount) return;
+
+      const entries = Array.from({ length: 8 }, (_, i) => i);
+      const sourceRows = [
+        { label: "r₀ (t = 0)", key: "t", start: 0, end: 4, slice: "r₀[0:4]" },
+        { label: "r₁ (h = 1)", key: "h", start: 4, end: 6, slice: "r₁[4:6]" },
+        { label: "r₂ (w = 2)", key: "w", start: 6, end: 8, slice: "r₂[6:8]" }
+      ];
+
+      const rowMarkup = sourceRows.map(function (row) {
+        const cells = entries.map(function (i) {
+          const selected = i >= row.start && i < row.end;
+          return '<span class="rotation-cell' +
+            (selected ? ' selected-' + row.key : '') +
+            '" title="' + row.label + ', entry ' + i + (selected ? ' — selected' : ' — not selected') + '">' +
+            i + '</span>';
+        }).join("");
+        return '<div class="rotation-row">' +
+          '<div class="rotation-row-label">' + row.label + '</div>' +
+          '<div class="rotation-grid-scroll"><div class="rotation-cells">' + cells + '</div></div>' +
+          '</div>';
+      }).join("");
+
+      const segmentMarkup = sourceRows.map(function (row) {
+        const indices = entries.slice(row.start, row.end);
+        const cells = indices.map(function (i) {
+          return '<span class="assembled-cell" title="' + row.slice + ', source entry ' + i + '">' +
+            i + '</span>';
+        }).join("");
+        const countClass = indices.length === 4 ? "four" : "two";
+        return '<div class="assembled-segment ' + row.key + '">' +
+          '<div class="assembled-segment-label">' + row.slice + '</div>' +
+          '<div class="assembled-cells ' + countClass + '">' + cells + '</div>' +
+          '</div>';
+      }).join("");
+
+      mount.innerHTML =
+        '<div class="rotation-key">' +
+          '<span><i class="swatch t"></i>selected from r₀ (time)</span>' +
+          '<span><i class="swatch h"></i>selected from r₁ (height)</span>' +
+          '<span><i class="swatch w"></i>selected from r₂ (width)</span>' +
+        '</div>' +
+        '<div class="rotation-matrix">' + rowMarkup + '</div>' +
+        '<p class="small"><strong>Concatenate the colored slices in order:</strong></p>' +
+        '<div class="assembled-scroll"><div class="assembled-vector">' + segmentMarkup + '</div></div>' +
+        '<p class="rotation-footnote">Result has 8 frequency entries: first 2 selected time entries, then 3 height entries, then 3 width entries. The row labels indicate the position used to generate each source coefficient vector.</p>';
+    }());
+
+    // Visualize the Qwen3-VL-style interleaving rule with mrope_section=[4,2,2].
+    // Start from T at every slot; H overwrites indices 1,4 and W overwrites 2,5.
+    // Therefore T remains selected at 0,3,6,7.
+    (function renderInterleavedMropeVector() {
+      const mount = document.getElementById("interleaved-vector-visual");
+      if (!mount) return;
+
+      const entries = Array.from({ length: 8 }, (_, i) => i);
+      const sources = [
+        { label: "r₀ (t = 0)", key: "t", selected: i => [0, 3, 6, 7].includes(i) },
+        { label: "r₁ (h = 1)", key: "h", selected: i => [1, 4].includes(i) },
+        { label: "r₂ (w = 2)", key: "w", selected: i => [2, 5].includes(i) }
+      ];
+
+      const rows = sources.map(source => {
+        const cells = entries.map(i => {
+          const selected = source.selected(i);
+          return '<span class="rotation-cell' +
+            (selected ? ' selected-' + source.key : '') +
+            '" title="' + source.label + ', frequency index ' + i +
+            (selected ? ' — selected in final vector' : ' — not selected') + '">' +
+            i + '</span>';
+        }).join("");
+        return '<div class="rotation-row">' +
+          '<div class="rotation-row-label">' + source.label + '</div>' +
+          '<div class="rotation-grid-scroll"><div class="rotation-cells interleaved">' +
+          cells + '</div></div></div>';
+      }).join("");
+
+      const axisAt = ["t", "h", "w", "t", "h", "w", "t", "t"];
+      const sourceAt = ["r₀", "r₁", "r₂", "r₀", "r₁", "r₂", "r₀", "r₀"];
+      const resultCells = entries.map(i => {
+        const axis = axisAt[i];
+        const css = axis === "t" ? "selected-t" : axis === "h" ? "selected-h" : "selected-w";
+        return '<div class="interleaved-result-cell ' + css + '" title="Index ' + i +
+          ' selected from ' + sourceAt[i] + '[' + i + ']">' +
+          sourceAt[i] + '[' + i + ']' +
+          '<span class="source-axis">' + axis.toUpperCase() + ' · idx ' + i + '</span></div>';
+      }).join("");
+
+      mount.innerHTML =
+        '<div class="rotation-key">' +
+          '<span><i class="swatch t"></i>T positions: 0, 3, 6, 7</span>' +
+          '<span><i class="swatch h"></i>H positions: 1, 4</span>' +
+          '<span><i class="swatch w"></i>W positions: 2, 5</span>' +
+        '</div>' +
+        '<div class="rotation-matrix">' + rows + '</div>' +
+        '<p class="small"><strong>Assembled interleaved vector — keep the same frequency index while switching the source axis:</strong></p>' +
+        '<div class="assembled-scroll"><div class="interleaved-result">' + resultCells + '</div></div>';
+    }());
+
+    (function () {
+      const gridH = 3, gridW = 4;
+      const cases = {
+        row:      { a: [0, 0, 1], b: [0, 1, 1] },
+        column:   { a: [0, 0, 1], b: [0, 0, 2] },
+        frame:    { a: [0, 0, 1], b: [1, 0, 1] },
+        diagonal: { a: [0, 0, 1], b: [0, 1, 2] }
+      };
+      const fmt = p => `(${p.join(",")})`;
+      const flatten = p => p[0] * gridH * gridW + p[1] * gridW + p[2];
+      const el = document.getElementById("scenario");
+      const out = document.getElementById("demo-output");
+      function render() {
+        const { a, b } = cases[el.value];
+        const delta = b.map((v, i) => v - a[i]);
+        out.innerHTML = `
+          <p><strong>Patch A:</strong> <code>(t,h,w) = ${fmt(a)}</code>, flattened index ${flatten(a)}.</p>
+          <p><strong>Patch B:</strong> <code>(t,h,w) = ${fmt(b)}</code>, flattened index ${flatten(b)}.</p>
+          <p><strong>1D RoPE:</strong> relative sequence offset = ${flatten(b) - flatten(a)}.</p>
+          <p><strong>MRoPE / Interleaved MRoPE:</strong> relative axis offset = <code>${fmt(delta)}</code>; ${delta.map((v, i) => ({v, axis:["time","height","width"][i]})).filter(o => o.v !== 0).map(o => `${o.axis} changes by ${o.v}`).join("; ") || "no positional coordinate changes"}.</p>`;
+      }
+      el.addEventListener("change", render);
+      render();
+    }());
+  </script>
+</body>
+</html>
