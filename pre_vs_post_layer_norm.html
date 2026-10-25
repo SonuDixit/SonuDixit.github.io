@@ -1,0 +1,315 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="A small, reproducible PyTorch experiment comparing Pre-LN and Post-LN gradient flow at 24, 32, and 48 decoder layers.">
+  <title>Pre-LN vs Post-LN: Gradient Flow | Sonu Dixit</title>
+  <style>
+    :root { --ink:#182230; --muted:#536273; --line:#dbe3ec; --paper:#fff; --wash:#f5f8fc; --blue:#2563eb; --orange:#ea580c; --green:#16a34a; --radius:16px; }
+    * { box-sizing:border-box; }
+    html { scroll-behavior:smooth; scroll-padding-top:85px; }
+    body { margin:0; color:var(--ink); background:var(--paper); font:16px/1.68 system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif; }
+    a { color:#1859a9; text-underline-offset:3px; }
+    a:hover { color:#103b73; }
+    .topbar { border-bottom:1px solid var(--line); background:rgba(255,255,255,.96); }
+    .topbar-inner { max-width:1100px; margin:auto; padding:15px 24px; display:flex; gap:16px; align-items:center; justify-content:space-between; }
+    .brand { font-weight:750; letter-spacing:-.02em; color:var(--ink); text-decoration:none; }
+    .navlinks { display:flex; flex-wrap:wrap; gap:15px; font-size:.9rem; }
+    .navlinks a { color:var(--muted); text-decoration:none; }
+    .navlinks a:hover { color:var(--ink); text-decoration:underline; }
+    main { max-width:1100px; padding:0 24px 72px; margin:0 auto; }
+    .hero { padding:54px 0 26px; }
+    .eyebrow { font-size:.78rem; font-weight:750; text-transform:uppercase; letter-spacing:.12em; color:#42658d; }
+    h1 { font-size:clamp(2.1rem,5vw,3.35rem); letter-spacing:-.045em; line-height:1.12; margin:10px 0 16px; max-width:900px; }
+    h2 { font-size:clamp(1.55rem,3vw,2.15rem); letter-spacing:-.03em; line-height:1.2; margin:0 0 14px; }
+    h3 { font-size:1.15rem; line-height:1.3; margin:0 0 9px; }
+    p { margin:10px 0; }
+    .lede { color:var(--muted); font-size:1.12rem; max-width:850px; }
+    .meta { display:flex; flex-wrap:wrap; gap:8px; margin-top:18px; }
+    .pill { border:1px solid var(--line); border-radius:999px; padding:4px 10px; color:var(--muted); font-size:.8rem; background:white; }
+    .toc { display:flex; flex-wrap:wrap; gap:8px; margin:14px 0 30px; }
+    .toc a { border:1px solid var(--line); border-radius:999px; padding:6px 11px; text-decoration:none; color:var(--muted); font-size:.87rem; }
+    section { margin-top:50px; }
+    .grid { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:15px; }
+    .card { border:1px solid var(--line); border-radius:var(--radius); padding:20px; background:#fff; min-width:0; }
+    .flat { background:var(--wash); }
+    .callout { border-left:4px solid #7da3d5; border-radius:0 10px 10px 0; padding:13px 16px; margin:18px 0; background:#f2f7fd; }
+    .equation { overflow-x:auto; padding:13px 16px; background:var(--wash); border:1px solid var(--line); border-radius:11px; font: .95rem/1.9 ui-monospace,SFMono-Regular,Menlo,Consolas,monospace; white-space:nowrap; }
+    .muted,.small { color:var(--muted); } .small { font-size:.88rem; }
+    code { background:#eef2f7; padding:.12em .35em; border-radius:5px; font-size:.9em; }
+    .table-wrap { overflow-x:auto; border:1px solid var(--line); border-radius:13px; }
+    table { border-collapse:collapse; width:100%; min-width:760px; }
+    th,td { padding:12px 14px; border-bottom:1px solid var(--line); text-align:left; vertical-align:top; }
+    th { background:var(--wash); font-size:.86rem; }
+    td { font-size:.92rem; }
+    tr:last-child td { border-bottom:0; }
+    .figure { margin:20px 0 0; border:1px solid var(--line); border-radius:var(--radius); padding:16px; background:white; box-shadow:0 6px 22px rgba(20,37,62,.04); }
+    .chart { width:100%; overflow:hidden; }
+    .chart svg { width:100%; height:auto; display:block; }
+    .chart-status { color:var(--muted); font-size:.88rem; padding:12px 0; }
+    .legend { display:flex; flex-wrap:wrap; gap:12px 18px; font-size:.84rem; color:var(--muted); margin:8px 0 0; }
+    .legend span { display:inline-flex; align-items:center; gap:7px; }
+    .swatch { width:20px; height:3px; display:inline-block; background:var(--blue); }
+    .swatch.post { background:var(--orange); } .swatch.pre { background:var(--green); height:0; border-top:3px dashed var(--green); }
+    .note { color:var(--muted); font-size:.88rem; }
+    footer { border-top:1px solid var(--line); color:var(--muted); font-size:.87rem; padding:24px; text-align:center; }
+    @media(max-width:720px) {
+      .topbar-inner { align-items:flex-start; flex-direction:column; padding:14px 18px; }
+      main { padding:0 18px 55px; }
+      .hero { padding-top:38px; }
+      .grid { grid-template-columns:1fr; }
+      .figure { padding:8px; }
+      .chart { overflow-x:auto; }
+      .chart svg { min-width:720px; }
+    }
+  </style>
+</head>
+<body>
+  <header class="topbar">
+    <div class="topbar-inner">
+      <a class="brand" href="index.html">Sonu Dixit</a>
+      <nav class="navlinks" aria-label="Primary navigation">
+        <a href="index.html">Home</a>
+        <a href="notes_blogs.html">Notes/blogs</a>
+        <a href="#architectures">Architectures</a>
+        <a href="#experiment">Experiment</a>
+        <a href="#results">Results</a>
+        <a href="#references">References</a>
+      </nav>
+    </div>
+  </header>
+  <main>
+    <header class="hero">
+      <div class="eyebrow">Study notes · Transformer optimization</div>
+      <h1>Pre-LN vs Post-LN: What changes in the gradients?</h1>
+      <p class="lede">A small causal Transformer experiment comparing layer-normalization placement at initialization. We keep shared parameter values and the training batch fixed, run one forward/backward pass, and inspect gradients at different model depths.</p>
+      <div class="meta"><span class="pill">PyTorch</span><span class="pill">Causal decoder</span><span class="pill">24 / 32 / 48 layers</span><span class="pill">One backward pass</span></div>
+    </header>
+
+    <div class="callout">
+      <strong>Observed in this run:</strong> the L2 norm of the final FFN's second weight-matrix gradient was larger for Post-LN at all three depths. The Post-LN / Pre-LN ratio was 1.91× at 24 layers, 2.13× at 32 layers, and 2.50× at 48 layers. This is a single-seed illustration, not a multi-seed statistical result or a reproduction of the paper's theorem.
+    </div>
+    <nav class="toc" aria-label="On this page">
+      <a href="#architectures">1. Definitions</a><a href="#gradient-path">2. Gradient path</a><a href="#experiment">3. Experimental setup</a><a href="#results">4. Results</a><a href="#plots">5. Plots</a><a href="#references">References</a>
+    </nav>
+
+    <section id="architectures">
+      <div class="eyebrow">01 · Definitions</div>
+      <h2>Where is LayerNorm placed?</h2>
+      <p>For clarity, one decoder block is written as a causal self-attention sublayer followed by an FFN sublayer. Dropout is disabled in this toy model. The FFN uses a GELU activation.</p>
+      <div class="grid">
+        <article class="card">
+          <h3>Post-LN</h3>
+          <p>LayerNorm follows each residual addition. The output of each sublayer is normalized before entering the next sublayer.</p>
+          <div class="equation">x′ = LN(x + Attention(x))<br>x_next = LN(x′ + FFN(x′))</div>
+          <p class="small">The final decoder block already ends with LayerNorm, so this implementation does not add another final normalization.</p>
+        </article>
+        <article class="card">
+          <h3>Pre-LN</h3>
+          <p>LayerNorm is applied inside each residual branch, before attention or the FFN. The residual stream itself bypasses that normalization.</p>
+          <div class="equation">x′ = x + Attention(LN(x))<br>x_next = x′ + FFN(LN(x′))</div>
+          <p class="small">A separate final LayerNorm is applied before the vocabulary projection, as in the canonical Pre-LN setup analyzed by Xiong et al.</p>
+        </article>
+      </div>
+    </section>
+
+    <section id="gradient-path">
+      <div class="eyebrow">02 · Backpropagation intuition</div>
+      <h2>Why placement changes the gradient path</h2>
+      <p>Let J denote a Jacobian and g<sub>l</sub> = ∂L/∂x<sub>l</sub>. For a simplified block function F, the respective block Jacobians are:</p>
+      <div class="grid">
+        <div class="card flat">
+          <h3>Post-LN</h3>
+          <div class="equation">x_next = LN(x + F(x))<br>g = (I + J_F)ᵀ J_LNᵀ g_next</div>
+          <p>The residual branch is still present, but its gradient passes through the LayerNorm Jacobian because normalization follows the addition.</p>
+        </div>
+        <div class="card flat">
+          <h3>Pre-LN</h3>
+          <div class="equation">x_next = x + F(LN(x))<br>g = [I + J_LNᵀ J_Fᵀ] g_next</div>
+          <p>The identity term gives the hidden-state gradient a direct path through the residual stream, without passing through the sublayer Jacobian or its input LayerNorm.</p>
+        </div>
+      </div>
+      <p class="note">This explains a structural difference in gradient propagation, but it does not imply that every Pre-LN parameter gradient must be smaller. Parameter gradients also depend on activations and the full network's hidden-state distribution.</p>
+    </section>
+
+    <section id="experiment">
+      <div class="eyebrow">03 · Experimental setup</div>
+      <h2>Controlled comparison</h2>
+      <div class="table-wrap">
+        <table>
+          <tbody>
+            <tr><th>Model</th><td>Small causal Transformer decoder with learned token and position embeddings, multi-head attention, and an FFN in each block.</td></tr>
+            <tr><th>Depths</th><td>24, 32, and 48 decoder blocks.</td></tr>
+            <tr><th>Dimensions</th><td>Vocabulary 257; model dimension 128; 4 attention heads; FFN dimension 512; sequence length 32; batch size 8.</td></tr>
+            <tr><th>Optimization step</th><td>One forward pass and one backward pass using next-token cross-entropy. No optimizer step is applied.</td></tr>
+            <tr><th>Controlled variables</th><td>Shared parameters are copied to exactly equal initial values; the same input tokens and targets are used for both architectures at each depth. Dropout is zero.</td></tr>
+            <tr><th>Initialization</th><td>Fixed PyTorch seeds (model seed 7; token batch seed 101); CPU execution.</td></tr>
+            <tr><th>Metrics</th><td>L2 gradient norms of the final FFN W₂ matrix and final attention QKV projection; element-wise histograms for the final FFN W₂ weights and gradients.</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <p class="note">The additional final LayerNorm in Pre-LN is architectural, not a parameter matched to Post-LN. All parameter tensors shared by both models are initialized identically; their forward activations naturally diverge because LayerNorm is placed differently.</p>
+    </section>
+
+    <section id="results">
+      <div class="eyebrow">04 · Quantitative results</div>
+      <h2>Gradient norms across model depths</h2>
+      <p>The table reports absolute gradient L2 norms after the single backward pass. “Post / Pre” is the ratio of the two gradient norms for the same named parameter.</p>
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>Layers</th><th>Parameter</th><th>Post-LN</th><th>Pre-LN</th><th>Post / Pre</th></tr></thead>
+          <tbody>
+            <tr><td rowspan="3">24</td><td>Final FFN W₂</td><td>2.7965e−1</td><td>1.4670e−1</td><td><strong>1.91×</strong></td></tr>
+            <tr><td>Final attention QKV</td><td>2.0955e−1</td><td>7.8305e−2</td><td>2.68×</td></tr>
+            <tr><td>First FFN W₂</td><td>3.9355e−1</td><td>2.2989e−1</td><td>1.71×</td></tr>
+            <tr><td rowspan="3">32</td><td>Final FFN W₂</td><td>2.9208e−1</td><td>1.3723e−1</td><td><strong>2.13×</strong></td></tr>
+            <tr><td>Final attention QKV</td><td>2.1666e−1</td><td>7.3420e−2</td><td>2.95×</td></tr>
+            <tr><td>First FFN W₂</td><td>4.1565e−1</td><td>2.6185e−1</td><td>1.59×</td></tr>
+            <tr><td rowspan="3">48</td><td>Final FFN W₂</td><td>2.8745e−1</td><td>1.1513e−1</td><td><strong>2.50×</strong></td></tr>
+            <tr><td>Final attention QKV</td><td>2.4887e−1</td><td>7.0403e−2</td><td>3.53×</td></tr>
+            <tr><td>First FFN W₂</td><td>4.5946e−1</td><td>2.5350e−1</td><td>1.81×</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <div class="callout">
+        <strong>What these numbers suggest:</strong> at the tested initialization, gradients for the final FFN W₂ and final attention QKV parameters are larger in Post-LN. The Post/Pre ratio for final FFN W₂ grows across these three runs. This trend is consistent with the motivation in the paper, but three depths under one seed do not establish a general scaling law.
+      </div>
+      <h3>Individual weights vs individual gradients</h3>
+      <p>For the final FFN W₂, the median absolute weight was about 2.2×10⁻² at all depths, while median absolute gradients were about 5.0–5.5×10⁻⁴ for Post-LN and 2.5–3.4×10⁻⁴ for Pre-LN. Thus, gradients are not generally larger than individual weights here. The main comparison is between gradient magnitudes across architectures—not between the L2 norm of a matrix gradient and a single weight value.</p>
+    </section>
+
+    <section id="plots">
+      <div class="eyebrow">05 · Distribution plots</div>
+      <h2>Final FFN W₂: parameter values and gradients</h2>
+      <p>Each depth-specific plot uses actual histogram bins from the experiment. The left panel shows signed values on a common linear scale; the right panel shows absolute magnitudes with the horizontal axis in log₁₀ space. The shared weight distribution is drawn once because the weights match exactly before any optimizer update.</p>
+      <figure class="figure">
+        <h3>24 decoder layers</h3>
+        <p class="small muted">Final FFN W₂, same shared initialization and batch.</p>
+        <div class="chart" id="chart-24"><div class="chart-status">Loading histogram data…</div></div>
+        <figcaption class="legend"><span><i class="swatch"></i>Shared weights</span><span><i class="swatch post"></i>Post-LN gradients</span><span><i class="swatch pre"></i>Pre-LN gradients</span></figcaption>
+      </figure>
+      <figure class="figure">
+        <h3>32 decoder layers</h3>
+        <p class="small muted">Same configuration, with 32 decoder blocks.</p>
+        <div class="chart" id="chart-32"><div class="chart-status">Loading histogram data…</div></div>
+        <figcaption class="legend"><span><i class="swatch"></i>Shared weights</span><span><i class="swatch post"></i>Post-LN gradients</span><span><i class="swatch pre"></i>Pre-LN gradients</span></figcaption>
+      </figure>
+      <figure class="figure">
+        <h3>48 decoder layers</h3>
+        <p class="small muted">Same configuration, with 48 decoder blocks.</p>
+        <div class="chart" id="chart-48"><div class="chart-status">Loading histogram data…</div></div>
+        <figcaption class="legend"><span><i class="swatch"></i>Shared weights</span><span><i class="swatch post"></i>Post-LN gradients</span><span><i class="swatch pre"></i>Pre-LN gradients</span></figcaption>
+      </figure>
+      <p class="note">Histograms are visual diagnostics of one initialization and one batch per depth. They are not uncertainty intervals or averages across random seeds.</p>
+    </section>
+
+    <section id="conclusion">
+      <div class="eyebrow">Takeaway</div>
+      <h2>What this experiment can—and cannot—show</h2>
+      <p>The controlled runs make the gradient difference visible without changing the shared initial parameter values, data, loss, or model width. In this run, Post-LN gradients for selected parameters near the output are consistently larger, with a stronger contrast for deeper models.</p>
+      <p>However, a rigorous test of depth-dependent gradient scaling needs repeated random seeds (and ideally more than one batch) at each depth, with means and variability reported. The theoretical claims in Xiong et al. come from a mean-field analysis and a broader empirical study; this small script illustrates a related phenomenon rather than reproducing the full analysis.</p>
+    </section>
+
+    <section id="references">
+      <div class="eyebrow">Further reading</div>
+      <h2>References and code</h2>
+      <ol>
+        <li>Xiong et al. (2020), <a href="https://proceedings.mlr.press/v119/xiong20b.html" target="_blank" rel="noopener noreferrer">On Layer Normalization in the Transformer Architecture</a>, ICML / Proceedings of Machine Learning Research, 119:10524–10533. The paper analyzes gradient behavior at initialization and the role of learning-rate warm-up.</li>
+        <li><a href="https://github.com/SonuDixit/SonuDixit.github.io" target="_blank" rel="noopener noreferrer">Page source and plotted histogram data in this repository</a>.</li>
+      </ol>
+    </section>
+    <p class="small"><a href="notes_blogs.html">← Back to Notes/blogs</a></p>
+  </main>
+  <footer>Study notes · Sonu Dixit</footer>
+  <script>
+    const palette = {
+      weights: "#2563eb",
+      post_ln_gradients: "#ea580c",
+      pre_ln_gradients: "#16a34a"
+    };
+
+    function svgText(x, y, text, size = 11, anchor = "middle", fill = "#536273", weight = "normal") {
+      return '<text x="' + x + '" y="' + y + '" font-family="Arial, sans-serif" font-size="' + size +
+        '" text-anchor="' + anchor + '" fill="' + fill + '" font-weight="' + weight + '">' + text + '</text>';
+    }
+
+    function makeStepPath(edges, values, xMap, yMap, bottom) {
+      let path = "";
+      for (let i = 0; i < values.length; i++) {
+        const x1 = xMap(edges[i]);
+        const x2 = xMap(edges[i + 1]);
+        const y = yMap(values[i]);
+        path += (i === 0 ? "M " + x1 + " " + bottom + " L " + x1 + " " + y : " L " + x1 + " " + y);
+        path += " L " + x2 + " " + y;
+      }
+      path += " L " + xMap(edges[edges.length - 1]) + " " + bottom;
+      return path;
+    }
+
+    function renderPanel(data, offsetX, mode) {
+      const W = 500, top = 102, bottom = 330, left = offsetX + 48, right = offsetX + W - 14;
+      const edges = data[mode].edges;
+      const series = data[mode].series;
+      const values = Object.values(series);
+      const maxY = Math.max(...values.flat()) * 1.08 || 1;
+      const xMin = edges[0], xMax = edges[edges.length - 1];
+      const xMap = x => left + (x - xMin) / (xMax - xMin) * (right - left);
+      const yMap = y => bottom - y / maxY * (bottom - top);
+      const title = mode === "signed" ? "Signed values · linear x-scale" : "Absolute magnitudes · log₁₀(|value|) x-scale";
+      let out = svgText((left + right) / 2, 76, title, 15, "middle", "#253246", "bold");
+      for (let j = 0; j <= 4; j++) {
+        const y = bottom - (bottom - top) * j / 4;
+        out += '<line x1="' + left + '" y1="' + y + '" x2="' + right + '" y2="' + y + '" stroke="#e5eaf0"/>';
+        out += svgText(left - 7, y + 4, (maxY * j / 4).toPrecision(2), 10, "end");
+      }
+      out += '<line x1="' + left + '" y1="' + top + '" x2="' + left + '" y2="' + bottom + '" stroke="#64748b"/>';
+      out += '<line x1="' + left + '" y1="' + bottom + '" x2="' + right + '" y2="' + bottom + '" stroke="#64748b"/>';
+      for (let j = 0; j <= 4; j++) {
+        const xVal = xMin + (xMax - xMin) * j / 4;
+        const x = xMap(xVal);
+        out += '<line x1="' + x + '" y1="' + bottom + '" x2="' + x + '" y2="' + (bottom + 4) + '" stroke="#64748b"/>';
+        let label;
+        if (mode === "signed") label = xVal.toFixed(3);
+        else label = "10^" + xVal.toFixed(1);
+        out += svgText(x, bottom + 18, label, 9);
+      }
+      for (const key of ["weights", "post_ln_gradients", "pre_ln_gradients"]) {
+        const dash = key === "pre_ln_gradients" ? ' stroke-dasharray="7 4"' : "";
+        out += '<path d="' + makeStepPath(edges, series[key], xMap, yMap, bottom) +
+          '" fill="none" stroke="' + palette[key] + '" stroke-width="2"' + dash + '/>';
+      }
+      out += svgText((left + right) / 2, 378, mode === "signed" ? "Signed value" : "Magnitude (tick = 10^exponent)", 11, "middle", "#253246");
+      return out;
+    }
+
+    function renderHistogram(data, mountId) {
+      const mount = document.getElementById(mountId);
+      const svg = '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1040 410" role="img" aria-label="Histograms of final FFN W2 weights and gradients">' +
+        '<rect width="1040" height="410" fill="#fff"/>' +
+        svgText(520, 28, "Final FFN W₂ · " + data.n_layers + " decoder layers", 18, "middle", "#182230", "bold") +
+        svgText(520, 49, "Shared parameters at initialization · one forward/backward pass", 11, "middle", "#536273") +
+        renderPanel(data, 12, "signed") +
+        renderPanel(data, 526, "log_abs") +
+        '</svg>';
+      mount.innerHTML = svg;
+    }
+
+    async function loadDepth(depth) {
+      const mountId = "chart-" + depth;
+      try {
+        const response = await fetch("data/pre_post_ln_depth" + depth + ".json");
+        if (!response.ok) throw new Error("HTTP " + response.status);
+        const data = await response.json();
+        renderHistogram(data, mountId);
+      } catch (error) {
+        document.getElementById(mountId).innerHTML =
+          '<p class="chart-status">Could not load this plot. Check that the matching data file is present under <code>data/</code>.</p>';
+        console.error("Unable to load histogram for depth " + depth, error);
+      }
+    }
+
+    [24, 32, 48].forEach(loadDepth);
+  </script>
+</body>
+</html>
