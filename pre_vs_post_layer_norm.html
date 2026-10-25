@@ -249,30 +249,13 @@
       <div class="eyebrow">Reproducibility</div>
       <h2>Experiment code</h2>
       <p>The complete PyTorch script builds a causal Transformer decoder with configurable depth, copies shared parameters between Pre-LN and Post-LN models, runs the same batch through both, performs one backward pass, and saves the three plots plus compact JSON data.</p>
-      <p><a href="experiments/pre_post_ln_demo.py" download>Download the experiment script (Python)</a> · <a href="https://github.com/SonuDixit/SonuDixit.github.io/blob/fix/pre-post-ln-plot-rendering-and-code/experiments/pre_post_ln_demo.py" target="_blank" rel="noopener noreferrer">View source on GitHub ↗</a></p>
+      <p><a href="https://github.com/SonuDixit/tranformer_exps/blob/main/experiments/pre_vs_post_layer_norm/pre_post_ln_demo.py" download>Download the experiment script (Python)</a> · <a href="https://github.com/SonuDixit/SonuDixit.github.io/blob/fix/pre-post-ln-plot-rendering-and-code/experiments/pre_post_ln_demo.py" target="_blank" rel="noopener noreferrer">View source on GitHub ↗</a></p>
       <h3>Install dependencies</h3>
       <div class="command"><code>pip install torch numpy matplotlib</code></div>
       <h3>Run each depth</h3>
-      <div class="code-block"><pre><code>python experiments/pre_post_ln_demo.py --n-layers 24 --output-dir results/depth24
-python experiments/pre_post_ln_demo.py --n-layers 32 --output-dir results/depth32
-python experiments/pre_post_ln_demo.py --n-layers 48 --output-dir results/depth48</code></pre></div>
-      <h3>Core architectural difference</h3>
-      <p class="small muted">Both versions pass the same hidden-state tensor to query, key, and value inputs for self-attention. PyTorch's <code>nn.MultiheadAttention</code> applies separate learned Q/K/V projections internally.</p>
-      <div class="code-block"><pre><code># Pre-LN block
-h = self.ln1(x)
-attn_out, _ = self.attn(h, h, h, attn_mask=causal_mask, need_weights=False)
-x = x + attn_out
-
-h = self.ln2(x)
-ff_out = self.ff2(self.act(self.ff1(h)))
-x = x + ff_out
-
-# Post-LN block
-attn_out, _ = self.attn(x, x, x, attn_mask=causal_mask, need_weights=False)
-x = self.ln1(x + attn_out)
-
-ff_out = self.ff2(self.act(self.ff1(x)))
-x = self.ln2(x + ff_out)</code></pre></div>
+      <div class="code-block"><pre><code>python pre_vs_post_layer_norm/pre_post_ln_demo.py --n-layers 24 --output-dir results/depth24
+python pre_vs_post_layer_norm/pre_post_ln_demo.py --n-layers 32 --output-dir results/depth32
+python pre_vs_post_layer_norm/pre_post_ln_demo.py --n-layers 48 --output-dir results/depth48</code></pre></div>
       <p class="note">The script defaults to CPU and fixed seeds for repeatability. It performs no optimizer step; it compares gradients after one backward pass. Re-running with multiple seeds is recommended before drawing statistical conclusions about depth trends.</p>
     </section>
 
@@ -281,7 +264,6 @@ x = self.ln2(x + ff_out)</code></pre></div>
       <h2>References and code</h2>
       <ol>
         <li>Xiong et al. (2020), <a href="https://proceedings.mlr.press/v119/xiong20b.html" target="_blank" rel="noopener noreferrer">On Layer Normalization in the Transformer Architecture</a>, ICML / Proceedings of Machine Learning Research, 119:10524–10533. The paper analyzes gradient behavior at initialization and the role of learning-rate warm-up.</li>
-        <li><a href="https://github.com/SonuDixit/tranformer_exps/blob/main/experiments/pre_vs_post_layer_norm/pre_post_ln_demo.py" target="_blank" rel="noopener noreferrer">Page source and plotted histogram data in this repository</a>.</li>
       </ol>
     </section>
     <p class="small"><a href="notes_blogs.html">← Back to Notes/blogs</a></p>
