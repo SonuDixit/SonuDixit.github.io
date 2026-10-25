@@ -47,6 +47,13 @@
     .figure { margin:20px 0 0; border:1px solid var(--line); border-radius:var(--radius); padding:16px; background:white; box-shadow:0 6px 22px rgba(20,37,62,.04); }
     .chart { width:100%; overflow:hidden; }
     .chart svg { width:100%; height:auto; display:block; }
+    .chart img { width:100%; height:auto; display:block; }
+    .depth-title { margin-top:38px; padding-top:8px; border-top:1px solid var(--line); }
+    .code-block { margin-top:14px; overflow-x:auto; border:1px solid #273449; border-radius:12px; background:#111827; color:#e5edf7; }
+    .code-block pre { margin:0; padding:16px; font: .84rem/1.65 ui-monospace,SFMono-Regular,Menlo,Consolas,monospace; white-space:pre; }
+    .code-block code { background:transparent; color:inherit; padding:0; font:inherit; }
+    .command { margin:12px 0; border:1px solid var(--line); background:var(--wash); border-radius:10px; padding:12px 14px; overflow-x:auto; }
+    .command code { background:none; padding:0; white-space:pre; }
     .chart-status { color:var(--muted); font-size:.88rem; padding:12px 0; }
     .legend { display:flex; flex-wrap:wrap; gap:12px 18px; font-size:.84rem; color:var(--muted); margin:8px 0 0; }
     .legend span { display:inline-flex; align-items:center; gap:7px; }
@@ -183,62 +190,52 @@
     <section id="plots">
       <div class="eyebrow">05 · Plots by depth</div>
       <h2>Gradient flow and final FFN distributions</h2>
-      <p>Each depth has three complementary views. Layer-wise norms show how gradient magnitudes vary through the stack; the weight/gradient histograms compare individual parameter values on common scales; and the scatter plot pairs Post-LN and Pre-LN gradients for the same sampled elements of the final FFN W₂ matrix.</p>
+      <p>Each depth has three complementary views. Layer-wise norms show how gradient magnitudes vary through the stack; the weight/gradient histograms compare individual parameter values on common scales; and the scatter plot pairs Post-LN and Pre-LN gradients for matched elements of the final FFN W₂ matrix.</p>
+      <p class="callout"><strong>Rendering note:</strong> these are static SVG files committed with the article, not charts that depend on browser-side JSON fetches. They remain visible even if the browser blocks data requests or serves JSON with an unexpected content type.</p>
 
-      <h3>24 decoder layers</h3>
-      <figure class="figure">
+      <h3 class="depth-title">24 decoder layers</h3>
+<figure class="figure">
         <h3>1. Layer-wise gradient norms</h3>
-        <p class="small muted">FFN W₂ and attention QKV projection weight gradients; y-axis is logarithmic.</p>
-        <div class="chart" id="layerwise-24"><div class="chart-status">Loading layer-wise gradients…</div></div>
-      </figure>
-      <figure class="figure">
+        <p class="small muted">FFN W₂ and attention QKV projection weight gradients across decoder blocks; logarithmic y-axis.</p>
+        <div class="chart"><img src="images/pre_post_layer_norm/depth24_layerwise.svg" alt="Layer-wise gradient norms comparing Pre-LN and Post-LN for 24 decoder layers" loading="lazy"></div>
+      </figure><figure class="figure">
         <h3>2. Weight and gradient histograms</h3>
         <p class="small muted">Final FFN W₂: signed values on a common linear scale and absolute magnitudes on a log₁₀ scale.</p>
-        <div class="chart" id="chart-24"><div class="chart-status">Loading histogram…</div></div>
-        <figcaption class="legend"><span><i class="swatch"></i>Shared weights</span><span><i class="swatch post"></i>Post-LN gradients</span><span><i class="swatch pre"></i>Pre-LN gradients</span></figcaption>
-      </figure>
-      <figure class="figure">
+        <div class="chart"><img src="images/pre_post_layer_norm/depth24_histogram.svg" alt="Weight and gradient histograms for final FFN W2 in 24-layer experiment" loading="lazy"></div>
+      </figure><figure class="figure">
         <h3>3. Matched element-wise gradient scatter</h3>
-        <p class="small muted">Each dot is the Post-LN and Pre-LN gradient pair for the same final FFN W₂ element.</p>
-        <div class="chart" id="scatter-24"><div class="chart-status">Loading scatter plot…</div></div>
+        <p class="small muted">Each dot pairs Post-LN and Pre-LN gradients for the same final FFN W₂ element; dashed diagonal is y = x.</p>
+        <div class="chart"><img src="images/pre_post_layer_norm/depth24_scatter.svg" alt="Matched Pre-LN and Post-LN gradient scatter for 24-layer experiment" loading="lazy"></div>
       </figure>
-
-      <h3 style="margin-top:38px">32 decoder layers</h3>
-      <figure class="figure">
+      <h3 class="depth-title">32 decoder layers</h3>
+<figure class="figure">
         <h3>1. Layer-wise gradient norms</h3>
-        <p class="small muted">FFN W₂ and attention QKV projection weight gradients; y-axis is logarithmic.</p>
-        <div class="chart" id="layerwise-32"><div class="chart-status">Loading layer-wise gradients…</div></div>
-      </figure>
-      <figure class="figure">
+        <p class="small muted">FFN W₂ and attention QKV projection weight gradients across decoder blocks; logarithmic y-axis.</p>
+        <div class="chart"><img src="images/pre_post_layer_norm/depth32_layerwise.svg" alt="Layer-wise gradient norms comparing Pre-LN and Post-LN for 32 decoder layers" loading="lazy"></div>
+      </figure><figure class="figure">
         <h3>2. Weight and gradient histograms</h3>
         <p class="small muted">Final FFN W₂: signed values on a common linear scale and absolute magnitudes on a log₁₀ scale.</p>
-        <div class="chart" id="chart-32"><div class="chart-status">Loading histogram…</div></div>
-        <figcaption class="legend"><span><i class="swatch"></i>Shared weights</span><span><i class="swatch post"></i>Post-LN gradients</span><span><i class="swatch pre"></i>Pre-LN gradients</span></figcaption>
-      </figure>
-      <figure class="figure">
+        <div class="chart"><img src="images/pre_post_layer_norm/depth32_histogram.svg" alt="Weight and gradient histograms for final FFN W2 in 32-layer experiment" loading="lazy"></div>
+      </figure><figure class="figure">
         <h3>3. Matched element-wise gradient scatter</h3>
-        <p class="small muted">Each dot is the Post-LN and Pre-LN gradient pair for the same final FFN W₂ element.</p>
-        <div class="chart" id="scatter-32"><div class="chart-status">Loading scatter plot…</div></div>
+        <p class="small muted">Each dot pairs Post-LN and Pre-LN gradients for the same final FFN W₂ element; dashed diagonal is y = x.</p>
+        <div class="chart"><img src="images/pre_post_layer_norm/depth32_scatter.svg" alt="Matched Pre-LN and Post-LN gradient scatter for 32-layer experiment" loading="lazy"></div>
       </figure>
-
-      <h3 style="margin-top:38px">48 decoder layers</h3>
-      <figure class="figure">
+      <h3 class="depth-title">48 decoder layers</h3>
+<figure class="figure">
         <h3>1. Layer-wise gradient norms</h3>
-        <p class="small muted">FFN W₂ and attention QKV projection weight gradients; y-axis is logarithmic.</p>
-        <div class="chart" id="layerwise-48"><div class="chart-status">Loading layer-wise gradients…</div></div>
-      </figure>
-      <figure class="figure">
+        <p class="small muted">FFN W₂ and attention QKV projection weight gradients across decoder blocks; logarithmic y-axis.</p>
+        <div class="chart"><img src="images/pre_post_layer_norm/depth48_layerwise.svg" alt="Layer-wise gradient norms comparing Pre-LN and Post-LN for 48 decoder layers" loading="lazy"></div>
+      </figure><figure class="figure">
         <h3>2. Weight and gradient histograms</h3>
         <p class="small muted">Final FFN W₂: signed values on a common linear scale and absolute magnitudes on a log₁₀ scale.</p>
-        <div class="chart" id="chart-48"><div class="chart-status">Loading histogram…</div></div>
-        <figcaption class="legend"><span><i class="swatch"></i>Shared weights</span><span><i class="swatch post"></i>Post-LN gradients</span><span><i class="swatch pre"></i>Pre-LN gradients</span></figcaption>
-      </figure>
-      <figure class="figure">
+        <div class="chart"><img src="images/pre_post_layer_norm/depth48_histogram.svg" alt="Weight and gradient histograms for final FFN W2 in 48-layer experiment" loading="lazy"></div>
+      </figure><figure class="figure">
         <h3>3. Matched element-wise gradient scatter</h3>
-        <p class="small muted">Each dot is the Post-LN and Pre-LN gradient pair for the same final FFN W₂ element.</p>
-        <div class="chart" id="scatter-48"><div class="chart-status">Loading scatter plot…</div></div>
+        <p class="small muted">Each dot pairs Post-LN and Pre-LN gradients for the same final FFN W₂ element; dashed diagonal is y = x.</p>
+        <div class="chart"><img src="images/pre_post_layer_norm/depth48_scatter.svg" alt="Matched Pre-LN and Post-LN gradient scatter for 48-layer experiment" loading="lazy"></div>
       </figure>
-      <p class="note">The histograms use every element of the final FFN W₂ matrix. The scatter plots show a deterministic sample of 80 matched elements out of 65,536 to keep the page lightweight. All results are from one initialization and one batch per depth.</p>
+      <p class="note">The scatter charts show a deterministic sample of 80 matched elements out of 65,536 for readability; Pearson correlation is calculated over the full final FFN W₂ gradient tensors. Results are from one initialization and one batch per depth, not averages over random seeds.</p>
     </section>
 
     <section id="conclusion">
@@ -246,6 +243,37 @@
       <h2>What this experiment can—and cannot—show</h2>
       <p>The controlled runs make the gradient difference visible without changing the shared initial parameter values, data, loss, or model width. In this run, Post-LN gradients for selected parameters near the output are consistently larger, with a stronger contrast for deeper models.</p>
       <p>However, a rigorous test of depth-dependent gradient scaling needs repeated random seeds (and ideally more than one batch) at each depth, with means and variability reported. The theoretical claims in Xiong et al. come from a mean-field analysis and a broader empirical study; this small script illustrates a related phenomenon rather than reproducing the full analysis.</p>
+    </section>
+
+    <section id="code">
+      <div class="eyebrow">Reproducibility</div>
+      <h2>Experiment code</h2>
+      <p>The complete PyTorch script builds a causal Transformer decoder with configurable depth, copies shared parameters between Pre-LN and Post-LN models, runs the same batch through both, performs one backward pass, and saves the three plots plus compact JSON data.</p>
+      <p><a href="experiments/pre_post_ln_demo.py" download>Download the experiment script (Python)</a> · <a href="https://github.com/SonuDixit/SonuDixit.github.io/blob/fix/pre-post-ln-plot-rendering-and-code/experiments/pre_post_ln_demo.py" target="_blank" rel="noopener noreferrer">View source on GitHub ↗</a></p>
+      <h3>Install dependencies</h3>
+      <div class="command"><code>pip install torch numpy matplotlib</code></div>
+      <h3>Run each depth</h3>
+      <div class="code-block"><pre><code>python experiments/pre_post_ln_demo.py --n-layers 24 --output-dir results/depth24
+python experiments/pre_post_ln_demo.py --n-layers 32 --output-dir results/depth32
+python experiments/pre_post_ln_demo.py --n-layers 48 --output-dir results/depth48</code></pre></div>
+      <h3>Core architectural difference</h3>
+      <p class="small muted">Both versions pass the same hidden-state tensor to query, key, and value inputs for self-attention. PyTorch's <code>nn.MultiheadAttention</code> applies separate learned Q/K/V projections internally.</p>
+      <div class="code-block"><pre><code># Pre-LN block
+h = self.ln1(x)
+attn_out, _ = self.attn(h, h, h, attn_mask=causal_mask, need_weights=False)
+x = x + attn_out
+
+h = self.ln2(x)
+ff_out = self.ff2(self.act(self.ff1(h)))
+x = x + ff_out
+
+# Post-LN block
+attn_out, _ = self.attn(x, x, x, attn_mask=causal_mask, need_weights=False)
+x = self.ln1(x + attn_out)
+
+ff_out = self.ff2(self.act(self.ff1(x)))
+x = self.ln2(x + ff_out)</code></pre></div>
+      <p class="note">The script defaults to CPU and fixed seeds for repeatability. It performs no optimizer step; it compares gradients after one backward pass. Re-running with multiple seeds is recommended before drawing statistical conclusions about depth trends.</p>
     </section>
 
     <section id="references">
@@ -259,177 +287,6 @@
     <p class="small"><a href="notes_blogs.html">← Back to Notes/blogs</a></p>
   </main>
   <footer>Study notes · Sonu Dixit</footer>
-  <script>
-    const palette = {
-      weights: "#2563eb",
-      post_ln_gradients: "#ea580c",
-      pre_ln_gradients: "#16a34a",
-      post: "#ea580c",
-      pre: "#16a34a"
-    };
 
-    function svgText(x, y, text, size = 11, anchor = "middle", fill = "#536273", weight = "normal") {
-      return '<text x="' + x + '" y="' + y + '" font-family="Arial, sans-serif" font-size="' + size +
-        '" text-anchor="' + anchor + '" fill="' + fill + '" font-weight="' + weight + '">' + text + '</text>';
-    }
-
-    function makeStepPath(edges, values, xMap, yMap, bottom) {
-      let path = "";
-      for (let i = 0; i < values.length; i++) {
-        const x1 = xMap(edges[i]);
-        const x2 = xMap(edges[i + 1]);
-        const y = yMap(values[i]);
-        path += (i === 0 ? "M " + x1 + " " + bottom + " L " + x1 + " " + y : " L " + x1 + " " + y);
-        path += " L " + x2 + " " + y;
-      }
-      path += " L " + xMap(edges[edges.length - 1]) + " " + bottom;
-      return path;
-    }
-
-    function renderPanel(data, offsetX, mode) {
-      const W = 500, top = 102, bottom = 330, left = offsetX + 48, right = offsetX + W - 14;
-      const edges = data[mode].edges;
-      const series = data[mode].series;
-      const values = Object.values(series);
-      const maxY = Math.max(...values.flat()) * 1.08 || 1;
-      const xMin = edges[0], xMax = edges[edges.length - 1];
-      const xMap = x => left + (x - xMin) / (xMax - xMin) * (right - left);
-      const yMap = y => bottom - y / maxY * (bottom - top);
-      const title = mode === "signed" ? "Signed values · linear x-scale" : "Absolute magnitudes · log₁₀(|value|) x-scale";
-      let out = svgText((left + right) / 2, 76, title, 15, "middle", "#253246", "bold");
-      for (let j = 0; j <= 4; j++) {
-        const y = bottom - (bottom - top) * j / 4;
-        out += '<line x1="' + left + '" y1="' + y + '" x2="' + right + '" y2="' + y + '" stroke="#e5eaf0"/>';
-        out += svgText(left - 7, y + 4, (maxY * j / 4).toPrecision(2), 10, "end");
-      }
-      out += '<line x1="' + left + '" y1="' + top + '" x2="' + left + '" y2="' + bottom + '" stroke="#64748b"/>';
-      out += '<line x1="' + left + '" y1="' + bottom + '" x2="' + right + '" y2="' + bottom + '" stroke="#64748b"/>';
-      for (let j = 0; j <= 4; j++) {
-        const xVal = xMin + (xMax - xMin) * j / 4;
-        const x = xMap(xVal);
-        out += '<line x1="' + x + '" y1="' + bottom + '" x2="' + x + '" y2="' + (bottom + 4) + '" stroke="#64748b"/>';
-        const label = mode === "signed" ? xVal.toFixed(3) : "10^" + xVal.toFixed(1);
-        out += svgText(x, bottom + 18, label, 9);
-      }
-      for (const key of ["weights", "post_ln_gradients", "pre_ln_gradients"]) {
-        const dash = key === "pre_ln_gradients" ? ' stroke-dasharray="7 4"' : "";
-        out += '<path d="' + makeStepPath(edges, series[key], xMap, yMap, bottom) +
-          '" fill="none" stroke="' + palette[key] + '" stroke-width="2"' + dash + '/>';
-      }
-      out += svgText((left + right) / 2, 378, mode === "signed" ? "Signed value" : "Magnitude (tick = 10^exponent)", 11, "middle", "#253246");
-      return out;
-    }
-
-    function renderHistogram(data, mountId) {
-      const mount = document.getElementById(mountId);
-      const svg = '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1040 410" role="img" aria-label="Histograms of final FFN W2 weights and gradients">' +
-        '<rect width="1040" height="410" fill="#fff"/>' +
-        svgText(520, 28, "Final FFN W₂ · " + data.n_layers + " decoder layers", 18, "middle", "#182230", "bold") +
-        svgText(520, 49, "Shared parameters at initialization · one forward/backward pass", 11, "middle", "#536273") +
-        renderPanel(data, 12, "signed") +
-        renderPanel(data, 526, "log_abs") +
-        '</svg>';
-      mount.innerHTML = svg;
-    }
-
-    function renderNormPanel(data, offsetX, key, title) {
-      const W = 510, left = offsetX + 52, right = offsetX + W - 14, top = 92, bottom = 330;
-      const postValues = data.layerwise.post_ln[key];
-      const preValues = data.layerwise.pre_ln[key];
-      const layers = data.n_layers;
-      const positive = postValues.concat(preValues).filter(v => v > 0);
-      const logMin = Math.floor(Math.log10(Math.min(...positive)));
-      const logMax = Math.ceil(Math.log10(Math.max(...positive)));
-      const lo = Math.pow(10, logMin), hi = Math.pow(10, logMax);
-      const xMap = layer => left + (layer - 1) / Math.max(layers - 1, 1) * (right - left);
-      const yMap = value => bottom - (Math.log10(value) - logMin) / Math.max(logMax - logMin, 1) * (bottom - top);
-      let out = svgText((left + right) / 2, 65, title, 14, "middle", "#253246", "bold");
-      for(let j=0;j<=4;j++) {
-        const y=top+(bottom-top)*j/4;
-        const logValue=logMax-(logMax-logMin)*j/4;
-        out += '<line x1="'+left+'" y1="'+y+'" x2="'+right+'" y2="'+y+'" stroke="#e5eaf0"/>';
-        out += svgText(left-7,y+4,"10^"+logValue.toFixed(1),9,"end");
-      }
-      out += '<line x1="'+left+'" y1="'+top+'" x2="'+left+'" y2="'+bottom+'" stroke="#64748b"/>';
-      out += '<line x1="'+left+'" y1="'+bottom+'" x2="'+right+'" y2="'+bottom+'" stroke="#64748b"/>';
-      const ticks = [...new Set([1, Math.ceil(layers/4), Math.ceil(layers/2), Math.ceil(3*layers/4), layers])];
-      for(const tick of ticks) {
-        const x=xMap(tick);
-        out += '<line x1="'+x+'" y1="'+bottom+'" x2="'+x+'" y2="'+(bottom+4)+'" stroke="#64748b"/>';
-        out += svgText(x,bottom+18,String(tick),9);
-      }
-      const poly = values => values.map((v,i)=>(i===0?"M ":" L ")+xMap(i+1)+" "+yMap(v)).join("");
-      out += '<path d="'+poly(postValues)+'" fill="none" stroke="'+palette.post+'" stroke-width="2"/>';
-      out += '<path d="'+poly(preValues)+'" fill="none" stroke="'+palette.pre+'" stroke-width="2" stroke-dasharray="7 4"/>';
-      out += svgText((left+right)/2,378,"Decoder block (1 = first / bottom block)",10,"middle","#253246");
-      return out;
-    }
-
-    function renderLayerwise(data, mountId) {
-      const mount=document.getElementById(mountId);
-      const svg='<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1040 410" role="img" aria-label="Layer-wise gradient norms by decoder block">' +
-        '<rect width="1040" height="410" fill="#fff"/>'+
-        svgText(520,28,"Layer-wise gradient norms · "+data.n_layers+" decoder layers",18,"middle","#182230","bold")+
-        renderNormPanel(data,8,"ff2","FFN second linear weight (W₂)")+
-        renderNormPanel(data,520,"attn_qkv","Attention QKV projection weights")+
-        '</svg>';
-      mount.innerHTML=svg;
-    }
-
-    function renderScatter(data, mountId) {
-      const mount=document.getElementById(mountId), s=data.scatter;
-      const width=680,height=590,left=100,right=630,top=54,bottom=490,limit=s.axis_limit;
-      const xMap=v=>left+(v+limit)/(2*limit)*(right-left);
-      const yMap=v=>bottom-(v+limit)/(2*limit)*(bottom-top);
-      let svg='<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 '+width+' '+height+'" role="img" aria-label="Matched element-wise Pre-LN and Post-LN gradient scatter">'+
-        '<rect width="'+width+'" height="'+height+'" fill="#fff"/>'+
-        svgText(width/2,26,"Final FFN W₂ · matched gradient elements",17,"middle","#182230","bold")+
-        svgText(width/2,46,"Full-matrix Pearson r = "+Number(s.pearson_r).toFixed(3)+" · plotted sample: "+s.sample_size.toLocaleString()+" / "+s.total_size.toLocaleString(),11,"middle","#536273");
-      for(let j=0;j<=4;j++) {
-        const val=-limit+2*limit*j/4, x=xMap(val), y=yMap(val);
-        svg+='<line x1="'+left+'" y1="'+y+'" x2="'+right+'" y2="'+y+'" stroke="#e5eaf0"/>';
-        svg+='<line x1="'+x+'" y1="'+top+'" x2="'+x+'" y2="'+bottom+'" stroke="#e5eaf0"/>';
-        svg+=svgText(x,bottom+19,val.toExponential(1),9);
-        svg+=svgText(left-8,y+4,val.toExponential(1),9,"end");
-      }
-      svg+='<line x1="'+left+'" y1="'+top+'" x2="'+left+'" y2="'+bottom+'" stroke="#64748b"/>'+
-        '<line x1="'+left+'" y1="'+bottom+'" x2="'+right+'" y2="'+bottom+'" stroke="#64748b"/>'+
-        '<line x1="'+xMap(-limit)+'" y1="'+yMap(-limit)+'" x2="'+xMap(limit)+'" y2="'+yMap(limit)+'" stroke="#64748b" stroke-dasharray="6 5" stroke-width="1.5"/>';
-      let visible=0;
-      for(let i=0;i<s.post_ln.length;i++) {
-        const x=s.post_ln[i], y=s.pre_ln[i];
-        if(Math.abs(x)>limit||Math.abs(y)>limit) continue;
-        visible++;
-        svg+='<circle cx="'+xMap(x)+'" cy="'+yMap(y)+'" r="2.2" fill="#4f78b7" fill-opacity=".42"/>';
-      }
-      svg+=svgText((left+right)/2,bottom+47,"Post-LN gradient for W₂ element",11,"middle","#253246")+
-        '<text x="25" y="'+((top+bottom)/2)+'" transform="rotate(-90 25 '+((top+bottom)/2)+')" font-family="Arial, sans-serif" font-size="11" text-anchor="middle" fill="#253246">Pre-LN gradient for the same element</text>'+
-        svgText(width/2,570,"Showing "+visible+" sampled points inside the 99.5th-percentile axis limits; dashed line is y = x.",10,"middle","#536273")+
-        '</svg>';
-      mount.innerHTML=svg;
-    }
-
-    async function loadDepth(depth) {
-      const histogramMount = "chart-" + depth;
-      const gradientMount = "layerwise-" + depth;
-      const scatterMount = "scatter-" + depth;
-      try {
-        const response = await fetch("data/pre_post_ln_depth" + depth + ".json");
-        if (!response.ok) throw new Error("Experiment plot data HTTP " + response.status);
-        const data = await response.json();
-        renderHistogram(data, histogramMount);
-        renderLayerwise(data, gradientMount);
-        renderScatter(data, scatterMount);
-      } catch (error) {
-        for(const mountId of [histogramMount,gradientMount,scatterMount]) {
-          const node=document.getElementById(mountId);
-          if(node) node.innerHTML='<p class="chart-status">Could not load plot data for this depth. Check the corresponding JSON files under <code>data/</code>.</p>';
-        }
-        console.error("Unable to load plots for depth " + depth, error);
-      }
-    }
-
-    [24, 32, 48].forEach(loadDepth);
-  </script>
 </body>
 </html>
