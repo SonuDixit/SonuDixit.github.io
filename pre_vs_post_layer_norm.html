@@ -142,6 +142,7 @@
             <tr><th>Model</th><td>Small causal Transformer decoder with learned token and position embeddings, multi-head attention, and an FFN in each block.</td></tr>
             <tr><th>Depths</th><td>24, 32, and 48 decoder blocks.</td></tr>
             <tr><th>Dimensions</th><td>Vocabulary 257; model dimension 128; 4 attention heads; FFN dimension 512; sequence length 32; batch size 8.</td></tr>
+            <tr><th>Attention implementation</th><td>Self-attention passes the same hidden-state tensor as query, key, and value input to PyTorch <code>nn.MultiheadAttention</code>. That module internally applies separate learned Q, K, and V projections; the three projection matrices are not tied.</td></tr>
             <tr><th>Optimization step</th><td>One forward pass and one backward pass using next-token cross-entropy. No optimizer step is applied.</td></tr>
             <tr><th>Controlled variables</th><td>Shared parameters are copied to exactly equal initial values; the same input tokens and targets are used for both architectures at each depth. Dropout is zero.</td></tr>
             <tr><th>Initialization</th><td>Fixed PyTorch seeds (model seed 7; token batch seed 101); CPU execution.</td></tr>
