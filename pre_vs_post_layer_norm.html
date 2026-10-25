@@ -250,9 +250,7 @@
       <div class="eyebrow">Reproducibility</div>
       <h2>Experiment code</h2>
       <p>The complete PyTorch script builds a causal Transformer decoder with configurable depth, copies shared parameters between Pre-LN and Post-LN models, runs the same batch through both, performs one backward pass, and saves the three plots plus compact JSON data.</p>
-      <p><a href="https://github.com/SonuDixit/tranformer_exps/blob/main/experiments/pre_vs_post_layer_norm/pre_post_ln_demo.py" download>Download the experiment script (Python)</a> · <a href="https://github.com/SonuDixit/SonuDixit.github.io/blob/fix/pre-post-ln-plot-rendering-and-code/experiments/pre_post_ln_demo.py" target="_blank" rel="noopener noreferrer">View source on GitHub ↗</a></p>
-      <h3>Install dependencies</h3>
-      <div class="command"><code>pip install torch numpy matplotlib</code></div>
+      <p><a href="https://github.com/SonuDixit/tranformer_exps/blob/main/experiments/pre_vs_post_layer_norm/pre_post_ln_demo.py" >Code</a> </p>
       <h3>Run each depth</h3>
       <div class="code-block"><pre><code>python pre_vs_post_layer_norm/pre_post_ln_demo.py --n-layers 24 --output-dir results/depth24
 python pre_vs_post_layer_norm/pre_post_ln_demo.py --n-layers 32 --output-dir results/depth32
@@ -262,14 +260,14 @@ python pre_vs_post_layer_norm/pre_post_ln_demo.py --n-layers 48 --output-dir res
 
     <section id="references">
       <div class="eyebrow">Further reading</div>
-      <h2>References and code</h2>
+      <h2>References</h2>
       <ol>
         <li>Xiong et al. (2020), <a href="https://proceedings.mlr.press/v119/xiong20b.html" target="_blank" rel="noopener noreferrer">On Layer Normalization in the Transformer Architecture</a>, ICML / Proceedings of Machine Learning Research, 119:10524–10533. The paper analyzes gradient behavior at initialization and the role of learning-rate warm-up.</li>
       </ol>
     </section>
     <p class="small"><a href="notes_blogs.html">← Back to Notes/blogs</a></p>
   </main>
-  <footer>Study notes · Sonu Dixit</footer>
+  <footer>Coauthor: GPT</footer>
 
 </body>
 </html>
