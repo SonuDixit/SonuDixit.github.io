@@ -238,7 +238,7 @@
         <p class="small muted">Each dot is the Post-LN and Pre-LN gradient pair for the same final FFN W₂ element.</p>
         <div class="chart" id="scatter-48"><div class="chart-status">Loading scatter plot…</div></div>
       </figure>
-      <p class="note">The histograms use every element of the final FFN W₂ matrix. The scatter plots show a deterministic sample of 600 matched elements out of 65,536 to keep the page lightweight. All results are from one initialization and one batch per depth.</p>
+      <p class="note">The histograms use every element of the final FFN W₂ matrix. The scatter plots show a deterministic sample of 80 matched elements out of 65,536 to keep the page lightweight. All results are from one initialization and one batch per depth.</p>
     </section>
 
     <section id="conclusion">
@@ -414,17 +414,12 @@
       const gradientMount = "layerwise-" + depth;
       const scatterMount = "scatter-" + depth;
       try {
-        const [histResponse, plotResponse] = await Promise.all([
-          fetch("data/pre_post_ln_depth" + depth + ".json"),
-          fetch("data/pre_post_ln_gradient_plot_data_depth" + depth + ".json")
-        ]);
-        if (!histResponse.ok) throw new Error("Histogram data HTTP " + histResponse.status);
-        if (!plotResponse.ok) throw new Error("Gradient plot data HTTP " + plotResponse.status);
-        const histData = await histResponse.json();
-        const plotData = await plotResponse.json();
-        renderHistogram(histData, histogramMount);
-        renderLayerwise(plotData, gradientMount);
-        renderScatter(plotData, scatterMount);
+        const response = await fetch("data/pre_post_ln_depth" + depth + ".json");
+        if (!response.ok) throw new Error("Experiment plot data HTTP " + response.status);
+        const data = await response.json();
+        renderHistogram(data, histogramMount);
+        renderLayerwise(data, gradientMount);
+        renderScatter(data, scatterMount);
       } catch (error) {
         for(const mountId of [histogramMount,gradientMount,scatterMount]) {
           const node=document.getElementById(mountId);
