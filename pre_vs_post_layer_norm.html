@@ -384,7 +384,7 @@
       let svg='<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 '+width+' '+height+'" role="img" aria-label="Matched element-wise Pre-LN and Post-LN gradient scatter">'+
         '<rect width="'+width+'" height="'+height+'" fill="#fff"/>'+
         svgText(width/2,26,"Final FFN W₂ · matched gradient elements",17,"middle","#182230","bold")+
-        svgText(width/2,46,"Pearson r = "+Number(s.pearson_r).toFixed(3)+" · sampled "+s.sample_size.toLocaleString()+" of "+s.total_size.toLocaleString(),11,"middle","#536273");
+        svgText(width/2,46,"Full-matrix Pearson r = "+Number(s.pearson_r).toFixed(3)+" · plotted sample: "+s.sample_size.toLocaleString()+" / "+s.total_size.toLocaleString(),11,"middle","#536273");
       for(let j=0;j<=4;j++) {
         const val=-limit+2*limit*j/4, x=xMap(val), y=yMap(val);
         svg+='<line x1="'+left+'" y1="'+y+'" x2="'+right+'" y2="'+y+'" stroke="#e5eaf0"/>';
