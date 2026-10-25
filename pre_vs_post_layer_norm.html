@@ -89,7 +89,7 @@
   <main>
     <header class="hero">
       <div class="eyebrow">Study notes · Transformer optimization</div>
-      <h1>Pre-LN vs Post-LN: Motivation and Empirical Analysis of Gradient Behavior</h1>
+      <h1>Pre-LN vs Post-LN: Empirical Analysis of Gradient Behavior</h1>
       <p class="lede"><a href="https://arxiv.org/pdf/2002.04745" target="_blank">Authors</a> mentioned post-LN architecture requires careful tuning of initial warm steps. The gradient magnitude on higher decoder layers are very high during initial training steps, and hence the warm up steps are required.</p>
       <p class="lede">A small causal Transformer experiment comparing layer-normalization placement at initialization. We keep shared parameter values and the training batch fixed, run one forward/backward pass, and inspect gradients at different model depths.</p>
       <div class="meta"><span class="pill">PyTorch</span><span class="pill">Causal decoder</span><span class="pill">24 / 32 / 48 layers</span><span class="pill">One backward pass</span></div>
