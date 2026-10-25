@@ -89,13 +89,15 @@
   <main>
     <header class="hero">
       <div class="eyebrow">Study notes · Transformer optimization</div>
-      <h1>Pre-LN vs Post-LN: What changes in the gradients?</h1>
+      <h1>Pre-LN vs Post-LN: Motivation and Empirical Analysis of Gradient Behavior</h1>
+      <p class="lede"><a href="https://arxiv.org/pdf/2002.04745" target="_blank">Authors</a> mentioned post-LN architecture requires careful tuning of initial warm steps. The gradient magnitude on higher decoder layers are very high during initial training steps, and hence the warm up steps are required.</p>
       <p class="lede">A small causal Transformer experiment comparing layer-normalization placement at initialization. We keep shared parameter values and the training batch fixed, run one forward/backward pass, and inspect gradients at different model depths.</p>
       <div class="meta"><span class="pill">PyTorch</span><span class="pill">Causal decoder</span><span class="pill">24 / 32 / 48 layers</span><span class="pill">One backward pass</span></div>
     </header>
 
     <div class="callout">
-      <strong>Observed in this run:</strong> the L2 norm of the final FFN's second weight-matrix gradient was larger for Post-LN at all three depths. The Post-LN / Pre-LN ratio was 1.91× at 24 layers, 2.13× at 32 layers, and 2.50× at 48 layers. This is a single-seed illustration, not a multi-seed statistical result or a reproduction of the paper's theorem.
+      <strong>Observed in this run:</strong> the L2 norm of the final FFN's second weight-matrix gradient was larger for Post-LN at all three depths. The Post-LN / Pre-LN ratio was 1.91× at 24 layers, 2.13× at 32 layers, and 2.50× at 48 layers.
+      The scatter plot comparing gradients at different model depths, clearly shows the gradient for the post-LN case to have larger magnitude for deeper models. </li>
     </div>
     <nav class="toc" aria-label="On this page">
       <a href="#architectures">1. Definitions</a><a href="#gradient-path">2. Gradient path</a><a href="#experiment">3. Experimental setup</a><a href="#results">4. Results</a><a href="#plots">5. Plots</a><a href="#references">References</a>
@@ -191,7 +193,6 @@
       <div class="eyebrow">05 · Plots by depth</div>
       <h2>Gradient flow and final FFN distributions</h2>
       <p>Each depth has three complementary views. Layer-wise norms show how gradient magnitudes vary through the stack; the weight/gradient histograms compare individual parameter values on common scales; and the scatter plot pairs Post-LN and Pre-LN gradients for matched elements of the final FFN W₂ matrix.</p>
-      <p class="callout"><strong>Rendering note:</strong> these are static SVG files committed with the article, not charts that depend on browser-side JSON fetches. They remain visible even if the browser blocks data requests or serves JSON with an unexpected content type.</p>
 
       <h3 class="depth-title">24 decoder layers</h3>
 <figure class="figure">
